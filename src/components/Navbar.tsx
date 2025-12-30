@@ -12,7 +12,7 @@ export function Navbar({ onSearch }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const { user, logout, isAuthenticated, token } = useAuth();
+  const { user, logout, isAuthenticated } = useAuth();
 
   // ✅ Auto-redirect to login when logged out
   useEffect(() => {

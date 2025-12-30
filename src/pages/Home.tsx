@@ -4,7 +4,6 @@ import { HeroSection } from '@/components/HeroSection';
 import { MangaBanner } from '@/components/MangaBanner';
 import { AnimeGrid } from '@/components/AnimeGrid';
 import { TrendingItem } from '@/components/TrendingItem';
-import { Footer } from '@/components/Footer';
 import { useTrendingAnimes, useNewReleases } from '@/hooks/useAnime';
 import { Anime } from '@/types';
 import { Loader } from 'lucide-react';
@@ -41,9 +40,9 @@ export function Home() {
     navigate(`/anime/${anime.id}`, { state: { anime } });
   };
 
-  const handleSearch = (query: string) => {
-    navigate(`/search?q=${encodeURIComponent(query)}`);
-  };
+  // const handleSearch = (query: string) => {
+  //   navigate(`/search?q=${encodeURIComponent(query)}`);
+  // };
 
   const loadMoreTrending = useCallback(async () => {
     if (loadingMore || !hasMore) return;

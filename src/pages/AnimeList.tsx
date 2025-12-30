@@ -38,9 +38,9 @@ export function AnimeList() {
     navigate(`/anime/${story.id}`, { state: { anime: story } });
   };
 
-  const handleSearch = (query: string) => {
-    navigate(`/search?q=${encodeURIComponent(query)}`);
-  };
+  // const handleSearch = (query: string) => {
+  //   navigate(`/search?q=${encodeURIComponent(query)}`);
+  // };
 
   const handlePrevPage = () => {
     if (page > 1) {

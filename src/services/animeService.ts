@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import { Anime, Episode } from '@/types';
 
 const API_BASE_URL = 'http://localhost:5000/api';
@@ -11,21 +11,21 @@ const apiClient = axios.create({
 });
 
 // Types for API responses
-interface PaginationResponse {
-  items: any[];
-  pagination?: {
-    currentPage: number;
-    totalItems: number;
-    totalItemsPerPage: number;
-  };
-  params?: {
-    pagination: {
-      currentPage: number;
-      totalItems: number;
-      totalItemsPerPage: number;
-    };
-  };
-}
+// interface PaginationResponse {
+//   items: any[];
+//   pagination?: {
+//     currentPage: number;
+//     totalItems: number;
+//     totalItemsPerPage: number;
+//   };
+//   params?: {
+//     pagination: {
+//       currentPage: number;
+//       totalItems: number;
+//       totalItemsPerPage: number;
+//     };
+//   };
+// }
 
 interface SearchResponse {
   items: Anime[];
