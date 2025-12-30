@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<VBox xmlns="http://javafx.com/javafx/20" xmlns:fx="http://javafx.com/fxml/1"
+      style="-fx-background-color: #2a2a2a; -fx-padding: 15; -fx-border-radius: 8;"
+      spacing="10">
+    <HBox spacing="15">
+        <ImageView fx:id="animeImage" style="-fx-fit-width: 80; -fx-fit-height: 100;"/>
+        <VBox spacing="8" HBox.hgrow="ALWAYS">
+            <Label fx:id="rank" style="-fx-text-fill: #FFB800; -fx-font-size: 20; -fx-font-weight: bold;"/>
+            <Label fx:id="animeTitle" style="-fx-text-fill: #fff; -fx-font-size: 14; -fx-font-weight: bold;"/>
+            <HBox spacing="5">
+                <Label text="👁" style="-fx-text-fill: #888;"/>
+                <Label fx:id="viewCount" style="-fx-text-fill: #888; -fx-font-size: 12;"/>
+            </HBox>
+            <HBox spacing="5">
+                <Label text="⭐" style="-fx-text-fill: #FFB800;"/>
+                <Label fx:id="rating" style="-fx-text-fill: #FFB800; -fx-font-size: 12;"/>
+            </HBox>
+        </VBox>
+        <Button text="→" style="-fx-background-color: #FFB800; -fx-text-fill: #000; -fx-font-size: 14; -fx-font-weight: bold; -fx-padding: 10;" onAction="#handleViewDetails"/>
+    </HBox>
+</VBox>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<VBox xmlns="http://javafx.com/javafx/20" xmlns:fx="http://javafx.com/fxml/1"
+      style="-fx-background-color: #2a2a2a; -fx-border-radius: 8; -fx-padding: 10;"
+      spacing="10">
+    <ImageView fx:id="animeImage" style="-fx-fit-width: 200; -fx-fit-height: 280;"/>
+    <Label fx:id="animeTitle" style="-fx-text-fill: #fff; -fx-font-size: 13; -fx-font-weight: bold; -fx-wrap-text: true;" wrapText="true"/>
+    <HBox spacing="5">
+        <Label fx:id="viewCount" style="-fx-text-fill: #888; -fx-font-size: 11;"/>
+        <Label text="👁" style="-fx-text-fill: #888; -fx-font-size: 11;"/>
+    </HBox>
+    <HBox spacing="8">
+        <Label fx:id="rating" style="-fx-text-fill: #FFB800; -fx-font-size: 12; -fx-font-weight: bold;"/>
+        <Label text="⭐" style="-fx-text-fill: #FFB800;"/>
+    </HBox>
+</VBox>

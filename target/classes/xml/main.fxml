@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/20" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.mangareading.controller.MainController"
+            style="-fx-background-color: #1a1a1a;">
+    
+    <!-- Top Navigation Bar -->
+    <top>
+        <VBox style="-fx-background-color: #0d0d0d; -fx-border-color: #333; -fx-border-width: 0 0 1 0;">
+            <HBox spacing="15" style="-fx-padding: 10 20; -fx-alignment: CENTER_LEFT;">
+                <!-- Logo -->
+                <Label text="LOGO ANIME" style="-fx-text-fill: #FFB800; -fx-font-size: 18; -fx-font-weight: bold;"/>
+                
+                <!-- Search Bar -->
+                <HBox spacing="5" style="-fx-background-color: #2a2a2a; -fx-padding: 8 12; -fx-border-radius: 5;">
+                    <TextField fx:id="searchInput" 
+                               promptText="Tìm kiếm Anime..." 
+                               style="-fx-text-fill: #fff; -fx-prompt-text-fill: #888; -fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-font-size: 13;"/>
+                    <Button text="🔍" style="-fx-background-color: transparent; -fx-text-fill: #FFB800;" onAction="#handleSearch"/>
+                </HBox>
+                
+                <!-- Spacer -->
+                <Region HBox.hgrow="ALWAYS"/>
+                
+                <!-- Navigation Menu -->
+                <HBox spacing="20" style="-fx-alignment: CENTER;">
+                    <Hyperlink text="Trang chủ" style="-fx-text-fill: #FFB800; -fx-font-size: 13;"/>
+                    <Hyperlink text="Danh sách Anime" style="-fx-text-fill: #ccc; -fx-font-size: 13;"/>
+                    <Hyperlink text="Mùa mới" style="-fx-text-fill: #ccc; -fx-font-size: 13;"/>
+                    <Hyperlink text="Phổ biến" style="-fx-text-fill: #ccc; -fx-font-size: 13;"/>
+                </HBox>
+                
+                <!-- Right Icons -->
+                <HBox spacing="15" style="-fx-alignment: CENTER;">
+                    <Button text="🔔" style="-fx-background-color: transparent; -fx-text-fill: #ccc; -fx-font-size: 14;" onAction="#handleNotification"/>
+                    <Button text="👤" style="-fx-background-color: transparent; -fx-text-fill: #ccc; -fx-font-size: 14;" onAction="#handleProfile"/>
+                </HBox>
+            </HBox>
+        </VBox>
+    </top>
+    
+    <!-- Main Content -->
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background-color: #1a1a1a;">
+            <VBox spacing="30" style="-fx-padding: 20;">
+                
+                <!-- Hero Section -->
+                <VBox fx:id="heroSection" style="-fx-background-color: #2a2a2a; -fx-border-radius: 10;">
+                    <HBox spacing="30" style="-fx-padding: 30;">
+                        <!-- Hero Text -->
+                        <VBox spacing="15" HBox.hgrow="ALWAYS">
+                            <Label text="My Hero Academia" style="-fx-text-fill: #fff; -fx-font-size: 36; -fx-font-weight: bold;"/>
+                            <Label text="Home | TV" style="-fx-text-fill: #888; -fx-font-size: 13;"/>
+                            <Label text="EP 24 - 24m" style="-fx-text-fill: #FFB800; -fx-font-size: 13; -fx-font-weight: bold;"/>
+                            
+                            <!-- Badges -->
+                            <HBox spacing="8">
+                                <Label text="SUB" style="-fx-background-color: #FFB800; -fx-text-fill: #000; -fx-padding: 4 8; -fx-font-size: 11; -fx-font-weight: bold;"/>
+                                <Label text="HD" style="-fx-background-color: #FFB800; -fx-text-fill: #000; -fx-padding: 4 8; -fx-font-size: 11; -fx-font-weight: bold;"/>
+                                <Label text="DUB" style="-fx-background-color: #FFB800; -fx-text-fill: #000; -fx-padding: 4 8; -fx-font-size: 11; -fx-font-weight: bold;"/>
+                            </HBox>
+                            
+                            <Label text="Sự xuất hiện của quirks - những năng lực siêu nhân mới được phát hiện - đã thay đổi thế giới với 80% nhân loại sở hữu chúng..."
+                                   style="-fx-text-fill: #ccc; -fx-font-size: 12; -fx-wrap-text: true;" wrapText="true"/>
+                            
+                            <Button text="▶ Xem Ngay" style="-fx-background-color: #FFB800; -fx-text-fill: #000; -fx-font-size: 14; -fx-padding: 10 30; -fx-font-weight: bold;" onAction="#handleWatchNow"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+                
+                <!-- Manga Reading Banner -->
+                <VBox style="-fx-background-color: #FFB800; -fx-border-radius: 10;">
+                    <HBox spacing="20" style="-fx-padding: 30;">
+                        <VBox spacing="15" HBox.hgrow="ALWAYS">
+                            <Label text="ĐỌC MY HERO ACADEMIA MANGA ONLINE" style="-fx-text-fill: #000; -fx-font-size: 18; -fx-font-weight: bold;"/>
+                            <Label text="Chất lượng cao | Không quảng cáo | Tải xuống miễn phí" style="-fx-text-fill: #333; -fx-font-size: 12;"/>
+                            <HBox spacing="10">
+                                <Button text="Đọc Ngay" style="-fx-background-color: #000; -fx-text-fill: #FFB800; -fx-font-weight: bold; -fx-padding: 8 20;" onAction="#handleReadManga"/>
+                                <Button text="Truy cập Website" style="-fx-background-color: transparent; -fx-text-fill: #000; -fx-font-weight: bold; -fx-border-color: #000; -fx-border-width: 2; -fx-padding: 8 20;" onAction="#handleWebsite"/>
+                            </HBox>
+                        </VBox>
+                    </HBox>
+                </VBox>
+                
+                <!-- Continue Watching -->
+                <VBox spacing="15">
+                    <Label text="▶ Tiếp tục Xem" style="-fx-text-fill: #FFB800; -fx-font-size: 18; -fx-font-weight: bold;"/>
+                    <GridPane fx:id="continueWatching" hgap="15" vgap="15">
+                        <!-- Items will be added dynamically -->
+                    </GridPane>
+                </VBox>
+                
+                <!-- New Releases -->
+                <VBox spacing="15">
+                    <HBox spacing="20" style="-fx-alignment: CENTER_LEFT;">
+                        <Label text="⭐ Phát Hành Mới" style="-fx-text-fill: #FFB800; -fx-font-size: 18; -fx-font-weight: bold;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Hyperlink text="Xem tất cả →" style="-fx-text-fill: #FFB800; -fx-font-size: 13;" onAction="#handleViewNewReleases"/>
+                    </HBox>
+                    <GridPane fx:id="newReleases" hgap="15" vgap="15">
+                        <!-- Items will be added dynamically -->
+                    </GridPane>
+                </VBox>
+                
+                <!-- Trending -->
+                <VBox spacing="15">
+                    <HBox spacing="20" style="-fx-alignment: CENTER_LEFT;">
+                        <Label text="🔥 Đang Xu Hướng" style="-fx-text-fill: #FFB800; -fx-font-size: 18; -fx-font-weight: bold;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Hyperlink text="Xem tất cả →" style="-fx-text-fill: #FFB800; -fx-font-size: 13;" onAction="#handleViewTrending"/>
+                    </HBox>
+                    <VBox fx:id="trendingList" spacing="10">
+                        <!-- Items will be added dynamically -->
+                    </VBox>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>
