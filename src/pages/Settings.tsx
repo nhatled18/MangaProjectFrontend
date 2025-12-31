@@ -18,6 +18,11 @@ export function Settings() {
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
   const [debugInfo, setDebugInfo] = useState<any>(null);
 
+  // Get API URL from environment or use default
+  const getApiUrl = () => {
+    return import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  };
+
   // Auto clear message after 5 seconds
   useEffect(() => {
     if (message) {
@@ -76,7 +81,8 @@ export function Settings() {
         payloadValues: payload,
       });
       
-      const response = await fetch('http://localhost:5000/api/auth/change-password', {
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/auth/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
