@@ -20,6 +20,11 @@ export function Home() {
   const [hasMore, setHasMore] = useState(true);
   const observerTarget = useRef<HTMLDivElement>(null);
 
+  // Get API URL from environment or use default
+  const getApiUrl = () => {
+    return import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  };
+
   // Initialize trending with first page
   useEffect(() => {
     setAllTrending(initialTrending);
@@ -40,10 +45,6 @@ export function Home() {
     navigate(`/anime/${anime.id}`, { state: { anime } });
   };
 
-  // const handleSearch = (query: string) => {
-  //   navigate(`/search?q=${encodeURIComponent(query)}`);
-  // };
-
   const loadMoreTrending = useCallback(async () => {
     if (loadingMore || !hasMore) return;
     
@@ -51,9 +52,10 @@ export function Home() {
       setLoadingMore(true);
       const nextPage = trendingPage + 1;
       const token = localStorage.getItem('token');
+      const apiUrl = getApiUrl();
       
       const response = await fetch(
-        `http://localhost:5000/api/anime/trending?limit=40&page=${nextPage}`,
+        `${apiUrl}/anime/trending?limit=40&page=${nextPage}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,

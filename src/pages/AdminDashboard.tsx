@@ -54,8 +54,13 @@ export function AdminDashboard() {
     rating: 0,
     episodeCount: 0,
     currentEpisode: 0,
-    isPublished: true, // <-- Changed to true
+    isPublished: true,
   });
+
+  // Get API URL from environment or use default
+  const getApiUrl = () => {
+    return import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  };
 
   useEffect(() => {
     console.log('🔍 AdminDashboard mounted');
@@ -90,9 +95,10 @@ export function AdminDashboard() {
       setLoading(true);
       setError(null);
       
+      const apiUrl = getApiUrl();
       console.log('📝 Fetching with token:', token?.substring(0, 20) + '...');
       
-      const response = await fetch('http://localhost:5000/api/auth/admin/users', {
+      const response = await fetch(`${apiUrl}/auth/admin/users`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -127,8 +133,9 @@ export function AdminDashboard() {
 
   const updateUserRole = async (userId: number, newRole: 'admin' | 'user') => {
     try {
+      const apiUrl = getApiUrl();
       const response = await fetch(
-        `http://localhost:5000/api/auth/admin/users/${userId}/role`,
+        `${apiUrl}/auth/admin/users/${userId}/role`,
         {
           method: 'PUT',
           headers: {
@@ -159,8 +166,9 @@ export function AdminDashboard() {
 
   const toggleUserStatus = async (userId: number, currentStatus: boolean) => {
     try {
+      const apiUrl = getApiUrl();
       const response = await fetch(
-        `http://localhost:5000/api/auth/admin/users/${userId}/status`,
+        `${apiUrl}/auth/admin/users/${userId}/status`,
         {
           method: 'PUT',
           headers: {
@@ -205,10 +213,11 @@ export function AdminDashboard() {
     setUploadMessage(null);
 
     try {
+      const apiUrl = getApiUrl();
       // Remove banner from form data before sending
       const { banner, ...formData } = form;
       
-      const response = await fetch('http://localhost:5000/api/admin/anime', {
+      const response = await fetch(`${apiUrl}/admin/anime`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -226,7 +235,7 @@ export function AdminDashboard() {
       const data = await response.json();
 
       if (data.success) {
-        console.log('API Response:', data); // Debug log
+        console.log('API Response:', data);
         const animeId = data.data?.id || data.id;
         setLastCreatedAnimeId(animeId);
         if (animeId) {
@@ -291,8 +300,9 @@ export function AdminDashboard() {
     formData.append('file', chapterFile);
 
     try {
+      const apiUrl = getApiUrl();
       const response = await fetch(
-        `http://localhost:5000/api/admin/anime/${animeId}/upload-chapters-zip`,
+        `${apiUrl}/admin/anime/${animeId}/upload-chapters-zip`,
         {
           method: 'POST',
           headers: {
@@ -307,7 +317,6 @@ export function AdminDashboard() {
 
       if (data.success) {
         setChapterFile(null);
-        // Don't clear animeId so user can upload more chapters for same anime
         const fileInput = document.getElementById('chapterFileInput') as HTMLInputElement;
         if (fileInput) fileInput.value = '';
       }

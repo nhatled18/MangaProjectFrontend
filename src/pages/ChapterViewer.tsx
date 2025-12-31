@@ -28,6 +28,16 @@ export function ChapterViewer() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Get API URL from environment or use default
+  const getApiUrl = () => {
+    return import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  };
+
+  const getBaseUrl = () => {
+    const apiUrl = getApiUrl();
+    return apiUrl.replace('/api', '');
+  };
+
   useEffect(() => {
     fetchChapterData();
   }, [chapterId]);
@@ -40,8 +50,9 @@ export function ChapterViewer() {
       let decodedChapterId = decodeURIComponent(chapterId || '');
       console.log('Chapter ID/URL:', decodedChapterId);
       
+      const apiUrl = getApiUrl();
       const response = await axios.get(
-        `http://localhost:5000/api/chapter?id=${encodeURIComponent(decodedChapterId)}`
+        `${apiUrl}/chapter?id=${encodeURIComponent(decodedChapterId)}`
       );
       
       console.log('Chapter response:', response.data);
@@ -54,7 +65,7 @@ export function ChapterViewer() {
         
         if (source === 'database') {
           if (item.pages && Array.isArray(item.pages)) {
-            const BASE_URL = 'http://localhost:5000';
+            const BASE_URL = getBaseUrl();
             
             images = item.pages
               .sort((a: any, b: any) => (a.pageNumber || 0) - (b.pageNumber || 0))
