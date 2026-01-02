@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { HeroSection } from '@/components/HeroSection';
+import { BackgroundImages } from '@/components/BackgroundImages';
 import { MangaBanner } from '@/components/MangaBanner';
 import { AnimeGrid } from '@/components/AnimeGrid';
 import { TrendingItem } from '@/components/TrendingItem';
@@ -14,24 +14,14 @@ export function Home() {
   const { animes: newReleases = [], loading: newLoading } = useNewReleases();
   const [continueWatching, setContinueWatching] = useState<Anime[]>([]);
   const [allTrending, setAllTrending] = useState<Anime[]>([]);
-  const [heroAnimes, setHeroAnimes] = useState<Anime[]>([]);
   const [trendingPage, setTrendingPage] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  // Get API URL from environment or use default
-  const getApiUrl = () => {
-    return import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-  };
-
-  // Initialize trending with first page
+  // Initialize trending
   useEffect(() => {
     setAllTrending(initialTrending);
-    // Use first 5 trending animes for hero carousel
-    if (initialTrending.length > 0) {
-      setHeroAnimes(initialTrending.slice(0, 5));
-    }
   }, [initialTrending]);
 
   // Mock continue watching data
@@ -52,10 +42,9 @@ export function Home() {
       setLoadingMore(true);
       const nextPage = trendingPage + 1;
       const token = localStorage.getItem('token');
-      const apiUrl = getApiUrl();
       
       const response = await fetch(
-        `${apiUrl}/anime/trending?limit=40&page=${nextPage}`,
+        `http://localhost:5000/api/anime/trending?limit=40&page=${nextPage}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -104,11 +93,8 @@ export function Home() {
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
-      {/* Hero Section */}
-      <HeroSection
-        animes={heroAnimes}
-        onWatchClick={() => heroAnimes.length > 0 && handleAnimeClick(heroAnimes[0])}
-      />
+      {/* Background Images */}
+      <BackgroundImages />
 
       {/* Manga Banner */}
       <MangaBanner
