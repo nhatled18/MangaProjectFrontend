@@ -96,8 +96,6 @@ export function AdminDashboard() {
       setError(null);
       
       const apiUrl = getApiUrl();
-      console.log('📝 Fetching with token:', token?.substring(0, 20) + '...');
-      
       const response = await fetch(`${apiUrl}/auth/admin/users`, {
         method: 'GET',
         headers: {
