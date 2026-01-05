@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BackgroundImages } from '@/components/BackgroundImages';
-import { MangaBanner } from '@/components/MangaBanner';
 import { AnimeGrid } from '@/components/AnimeGrid';
 import { TrendingItem } from '@/components/TrendingItem';
 import { useTrendingAnimes, useNewReleases } from '@/hooks/useAnime';
@@ -96,11 +95,6 @@ export function Home() {
       {/* Background Images */}
       <BackgroundImages />
 
-      {/* Manga Banner */}
-      <MangaBanner
-        onReadClick={() => navigate('/manga')}
-        onWebsiteClick={() => window.open('https://example.com', '_blank')}
-      />
 
       {/* Continue Watching */}
       {continueWatching.length > 0 && (
