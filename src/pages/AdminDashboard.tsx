@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { User } from '../types/auth';
@@ -33,15 +33,32 @@ export function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'users' | 'upload-anime'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'upload-anime' | 'my-stories'>('users');
   const [uploadMessage, setUploadMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [lastCreatedAnimeId, setLastCreatedAnimeId] = useState<number | null>(null);
+  const [myStories, setMyStories] = useState<any[]>([]);
+  const [myStoriesLoading, setMyStoriesLoading] = useState(false);
+  const [myStoriesError, setMyStoriesError] = useState<string | null>(null);
+
+  // Inline editing state
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingForm, setEditingForm] = useState<{ title: string; description: string; image?: string }>({ title: '', description: '' });
+  const [editingError, setEditingError] = useState<string | null>(null);
+  const [editingSaving, setEditingSaving] = useState(false);
+  const [editingImageFile, setEditingImageFile] = useState<File | null>(null);
+  const [editingImagePreview, setEditingImagePreview] = useState<string | null>(null);
+  const [editingImageUploading, setEditingImageUploading] = useState(false);
   
   // Chapter upload state
   const [chapterFile, setChapterFile] = useState<File | null>(null);
   const [animeId, setAnimeId] = useState<string>('');
   const [chapterResult, setChapterResult] = useState<ChapterUploadResult | null>(null);
+
+  // Image upload states
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
   
   const [form, setForm] = useState<AnimeForm>({
     title: '',
@@ -63,30 +80,20 @@ export function AdminDashboard() {
   };
 
   useEffect(() => {
-    console.log('🔍 AdminDashboard mounted');
-    console.log('   isInitialized:', isInitialized);
-    console.log('   isAuthenticated:', isAuthenticated);
-    console.log('   isAdmin:', isAdmin);
-    console.log('   token:', token ? 'exists' : 'missing');
-    
     if (!isInitialized) {
-      console.log('⏳ Waiting for auth to initialize...');
       return;
     }
     
     if (!isAuthenticated) {
-      console.log('❌ Not authenticated, redirecting to login');
       navigate('/login');
       return;
     }
     
     if (!isAdmin) {
-      console.log('❌ Not admin, redirecting home');
       navigate('/');
       return;
     }
     
-    console.log('✅ Admin verified, fetching users...');
     fetchUsers();
   }, [isInitialized, isAuthenticated, isAdmin, token, navigate]);
 
@@ -103,18 +110,14 @@ export function AdminDashboard() {
           'Content-Type': 'application/json'
         }
       });
-
-      console.log('📦 Response status:', response.status);
       
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('❌ API Error:', errorData);
         setError(errorData.msg || errorData.error || 'Failed to load users');
         return;
       }
 
       const data = await response.json();
-      console.log('✅ Users loaded:', data);
 
       if (data.success) {
         setUsers(data.data.users);
@@ -122,7 +125,6 @@ export function AdminDashboard() {
         setError(data.error || 'Failed to load users');
       }
     } catch (err) {
-      console.error('❌ Fetch error:', err);
       setError('Error loading users');
     } finally {
       setLoading(false);
@@ -205,6 +207,80 @@ export function AdminDashboard() {
     }));
   };
 
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setImageFile(null);
+      setImagePreview(null);
+      return;
+    }
+
+    // Kiểm tra loại file bằng extension
+    const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    const fileExt = file.name.split('.').pop()?.toLowerCase();
+    const isImageByExt = fileExt && validExtensions.includes(fileExt);
+    
+    if (isImageByExt) {
+      setImageFile(file);
+      // Tạo preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      alert(`❌ File type không hỗ trợ! Chỉ chấp nhận: ${validExtensions.join(', ').toUpperCase()}`);
+      setImageFile(null);
+      setImagePreview(null);
+    }
+  };
+
+  const uploadImageFile = async (file: File, isEditing: boolean = false): Promise<string | null> => {
+    try {
+      if (isEditing) {
+        setEditingImageUploading(true);
+      } else {
+        setImageUploading(true);
+      }
+      
+      const apiUrl = getApiUrl();
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch(`${apiUrl}/admin/upload-image`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        alert(err.msg || err.error || 'Failed to upload image');
+        return null;
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        return data.image_url;
+      } else {
+        alert(data.error || 'Failed to upload image');
+        return null;
+      }
+    } catch (err) {
+      alert('Error uploading image: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      return null;
+    } finally {
+      if (isEditing) {
+        setEditingImageUploading(false);
+      } else {
+        setImageUploading(false);
+      }
+    }
+  };
+
   const handleUploadAnime = async (e: React.FormEvent) => {
     e.preventDefault();
     setUploading(true);
@@ -212,8 +288,17 @@ export function AdminDashboard() {
 
     try {
       const apiUrl = getApiUrl();
-      // Remove banner from form data before sending
+      
+      // Upload image if file selected
+      let imageUrl = form.image || '';
+      if (imageFile) {
+        imageUrl = await uploadImageFile(imageFile, false) || imageUrl;
+      }
+      
       const { banner, ...formData } = form;
+      const submitData = { ...formData, image: imageUrl };
+      
+
       
       const response = await fetch(`${apiUrl}/admin/anime`, {
         method: 'POST',
@@ -221,27 +306,26 @@ export function AdminDashboard() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(submitData)
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        setUploadMessage({ type: 'error', text: errorData.msg || 'Failed to upload anime' });
+        setUploadMessage({ type: 'error', text: errorData.msg || 'Failed to upload truyện' });
         return;
       }
 
       const data = await response.json();
 
       if (data.success) {
-        console.log('API Response:', data);
         const animeId = data.data?.id || data.id;
         setLastCreatedAnimeId(animeId);
         if (animeId) {
           setAnimeId(animeId.toString());
         }
         const msgText = animeId 
-          ? `✅ Anime uploaded successfully! ID: ${animeId}` 
-          : '✅ Anime uploaded successfully!';
+          ? `✅ Truyện uploaded successfully! ID: ${animeId}` 
+          : '✅ Truyện uploaded successfully!';
         setUploadMessage({ 
           type: 'success', 
           text: msgText
@@ -259,12 +343,14 @@ export function AdminDashboard() {
           currentEpisode: 0,
           isPublished: true,
         });
+        setImageFile(null);
+        setImagePreview(null);
       } else {
-        setUploadMessage({ type: 'error', text: data.error || 'Failed to upload anime' });
+        setUploadMessage({ type: 'error', text: data.error || 'Failed to upload truyện' });
       }
     } catch (err) {
-      console.error('Error uploading anime:', err);
-      setUploadMessage({ type: 'error', text: 'Error uploading anime' });
+      console.error('Error uploading truyện:', err);
+      setUploadMessage({ type: 'error', text: 'Error uploading truyện' });
     } finally {
       setUploading(false);
     }
@@ -282,11 +368,173 @@ export function AdminDashboard() {
     }
   };
 
+  const fetchMyStories = async () => {
+    try {
+      setMyStoriesLoading(true);
+      setMyStoriesError(null);
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/admin/animes/mine`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        setMyStoriesError(err.msg || err.error || 'Failed to load stories');
+        return;
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        // Fix image URLs: prepend API base URL if they start with /uploads/
+        const storiesWithFixedImages = data.data.animes?.map((story: any) => ({
+          ...story,
+          image: story.image && story.image.startsWith('/uploads/') 
+            ? `${apiUrl.replace('/admin', '')}${story.image}` 
+            : story.image
+        })) || [];
+        
+        setMyStories(storiesWithFixedImages);
+      } else {
+        setMyStoriesError(data.error || 'Failed to load stories');
+      }
+    } catch (err) {
+      setMyStoriesError('Error loading my stories');
+    } finally {
+      setMyStoriesLoading(false);
+    }
+  };
+
+  // Start editing a story inline
+  const startEdit = (story: any) => {
+    setEditingId(story.id);
+    setEditingForm({ title: story.title || '', description: story.description || '', image: story.image || '' });
+    setEditingError(null);
+    setEditingImageFile(null);
+    setEditingImagePreview(story.image ? story.image : null);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditingForm({ title: '', description: '' });
+    setEditingError(null);
+    setEditingImageFile(null);
+    setEditingImagePreview(null);
+  };
+
+  const handleEditingChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target as any;
+    setEditingForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditingImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Kiểm tra loại file: MIME type hoặc extension
+    const isImageByType = file.type.startsWith('image/');
+    const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    const fileExt = file.name.split('.').pop()?.toLowerCase();
+    const isImageByExt = fileExt && validExtensions.includes(fileExt);
+    
+    if (isImageByType || isImageByExt) {
+      setEditingImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditingImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      alert(`❌ File type không hỗ trợ! Chỉ chấp nhận: ${validExtensions.join(', ').toUpperCase()}`);
+    }
+  };
+
+  const submitEdit = async () => {
+    if (!editingId) return;
+    setEditingSaving(true);
+    setEditingError(null);
+    try {
+      const apiUrl = getApiUrl();
+      
+      // Upload image if file selected
+      let imageUrl = editingForm.image || undefined;
+      if (editingImageFile) {
+        imageUrl = await uploadImageFile(editingImageFile, true) || editingForm.image;
+      }
+
+      const submitData: any = { title: editingForm.title, description: editingForm.description };
+      if (imageUrl) {
+        submitData.image = imageUrl;
+      }
+
+      const response = await fetch(`${apiUrl}/admin/anime/${editingId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(submitData)
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        setEditingError(err.msg || err.error || 'Failed to update strory');
+        return;
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        await fetchMyStories();
+        cancelEdit();
+      } else {
+        setEditingError(data.error || 'Failed to update truyện');
+      }
+    } catch (err) {
+      console.error('Error updating truyện', err);
+      setEditingError('Error updating truyện');
+    } finally {
+      setEditingSaving(false);
+    }
+  };
+
+  const deleteStory = async (storyId: number) => {
+    if (!window.confirm('Are you sure you want to delete this truyện? This will remove all chapters.')) return;
+    try {
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/admin/anime/${storyId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        alert(err.msg || err.error || 'Failed to delete truyện');
+        return;
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        setMyStories(myStories.filter(s => s.id !== storyId));
+      } else {
+        alert(data.error || 'Failed to delete truyện');
+      }
+    } catch (err) {
+      console.error('Error deleting story', err);
+      alert('Error deleting truyện');
+    }
+  };
+
   const handleUploadChapters = async () => {
     if (!chapterFile || !animeId) {
       setChapterResult({
         success: false,
-        error: 'Please select a ZIP file and enter Anime ID'
+        error: 'Please select a ZIP file and enter Truyện ID'
       });
       return;
     }
@@ -349,7 +597,7 @@ export function AdminDashboard() {
             <Shield className="text-yellow-500" size={32} />
             <h1 className="text-4xl font-bold text-white">Admin Dashboard</h1>
           </div>
-          <p className="text-gray-400">Manage users and upload anime & chapters</p>
+          <p className="text-gray-400">Quản lý người dùng và upload truyện & chương</p>
         </div>
 
         {/* Tabs */}
@@ -373,7 +621,19 @@ export function AdminDashboard() {
             }`}
           >
             <Plus size={18} />
-            Upload Anime & Chapters
+            Upload Truyện & Chương
+          </button>
+
+          <button
+            onClick={() => { setActiveTab('my-stories'); fetchMyStories(); }}
+            className={`px-4 py-2 font-semibold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${
+              activeTab === 'my-stories'
+                ? 'text-yellow-500 border-yellow-500'
+                : 'text-gray-400 border-transparent hover:text-white'
+            }`}
+          >
+            <CheckCircle size={18} />
+            Truyện đã upload
           </button>
         </div>
 
@@ -467,7 +727,7 @@ export function AdminDashboard() {
             <div className="space-y-8">
               {/* Anime Form Section */}
               <div>
-                <h2 className="text-2xl font-bold text-white mb-6">Upload Anime</h2>
+                <h2 className="text-2xl font-bold text-white mb-6">Upload Truyện</h2>
                 <form onSubmit={handleUploadAnime} className="space-y-6">
                   <div>
                     <label className="block text-gray-300 text-sm font-semibold mb-2">Title *</label>
@@ -478,7 +738,7 @@ export function AdminDashboard() {
                       onChange={handleFormChange}
                       required
                       className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 border border-gray-700"
-                      placeholder="Anime title"
+                      placeholder="Tiêu đề truyện"
                     />
                   </div>
 
@@ -491,20 +751,27 @@ export function AdminDashboard() {
                       required
                       rows={4}
                       className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 border border-gray-700"
-                      placeholder="Anime description"
+                      placeholder="Mô tả truyện"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-gray-300 text-sm font-semibold mb-2">Image URL</label>
-                    <input
-                      type="text"
-                      name="image"
-                      value={form.image}
-                      onChange={handleFormChange}
-                      className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 border border-gray-700"
-                      placeholder="Image URL"
-                    />
+                    <label className="block text-gray-300 text-sm font-semibold mb-2">Upload Image </label>
+                    <div className="flex gap-4">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageFileChange}
+                        disabled={imageUploading}
+                        className="flex-1 bg-gray-800 text-gray-400 px-4 py-2 rounded-lg border border-gray-700 hover:border-yellow-500 cursor-pointer"
+                      />
+                      {imageUploading && <span className="text-yellow-500">Uploading...</span>}
+                    </div>
+                    {imagePreview && (
+                      <div className="mt-3">
+                        <img src={imagePreview} alt="Preview" className="w-32 h-48 object-cover rounded border border-gray-700" />
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-3 gap-4">
@@ -595,7 +862,7 @@ export function AdminDashboard() {
                         className="w-5 h-5 rounded bg-gray-800 border-gray-700 cursor-pointer"
                       />
                       <label htmlFor="isPublished" className="text-blue-300 cursor-pointer flex-1">
-                        ✅ Publish immediately (để anime hiển thị trong search)
+                        ✅ Publish immediately (để truyện hiển thị trong search) 
                       </label>
                     </div>
                   </div>
@@ -605,7 +872,7 @@ export function AdminDashboard() {
                     disabled={uploading}
                     className="w-full bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50 text-black font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
                   >
-                    {uploading ? 'Uploading...' : <><Plus size={20} /> Upload Anime</>}
+                    {uploading ? 'Uploading...' : <><Plus size={20} /> Upload Truyện</>}
                   </button>
                 </form>
               </div>
@@ -671,16 +938,16 @@ export function AdminDashboard() {
 
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-gray-300 text-sm font-semibold mb-2">Anime ID *</label>
+                    <label className="block text-gray-300 text-sm font-semibold mb-2">Mã Truyện (ID) *</label>
                     <input
                       type="number"
                       value={animeId}
                       onChange={(e) => setAnimeId(e.target.value)}
                       className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 border border-gray-700"
-                      placeholder="Enter anime ID"
+                      placeholder="Mã truyện (ID)"
                     />
                     {lastCreatedAnimeId && !animeId && (
-                      <p className="mt-2 text-green-400 text-sm">💡 Vừa tạo anime ID: {lastCreatedAnimeId}</p>
+                      <p className="mt-2 text-green-400 text-sm">💡 Vừa tạo truyện ID: {lastCreatedAnimeId}</p>
                     )}
                   </div>
 
@@ -707,11 +974,113 @@ export function AdminDashboard() {
                     disabled={uploading || !chapterFile || !animeId}
                     className="w-full bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50 text-black font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
                   >
-                    {uploading ? 'Uploading...' : <><Upload size={20} /> Upload Chapters</>}
+                    {uploading ? 'Uploading...' : <><Upload size={20} /> Upload Chương</>}
                   </button>
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* My Stories Tab */}
+        {activeTab === 'my-stories' && (
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">Truyện đã upload</h2>
+              <button onClick={fetchMyStories} className="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded">Refresh</button>
+            </div>
+
+            {myStoriesLoading ? (
+              <div className="p-8 text-gray-400">Loading your stories...</div>
+            ) : myStoriesError ? (
+              <div className="p-6 text-red-400">{myStoriesError}</div>
+            ) : myStories.length === 0 ? (
+              <div className="p-6 text-gray-400">You have not uploaded any stories yet.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-800 bg-gray-800/50">
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-gray-300">ID</th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-gray-300">Tiêu đề</th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-gray-300">Trạng thái</th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-gray-300">Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {myStories.map((s) => (
+                      <React.Fragment key={s.id}>
+                        <tr className="border-b border-gray-800 hover:bg-gray-800/30">
+                          <td className="px-4 py-3 text-gray-300">{s.id}</td>
+                          <td className="px-4 py-3">
+                            <div className="text-white font-semibold">{s.title}</div>
+                            <div className="text-gray-400 text-sm">{s.slug}</div>
+                          </td>
+                          <td className="px-4 py-3 text-gray-300">{s.status}</td>
+                          <td className="px-4 py-3 flex gap-2">
+                            <button onClick={() => startEdit(s)} className="px-3 py-1 bg-yellow-600 text-black rounded">Chỉnh sửa</button>
+                            <button onClick={() => { setAnimeId(s.id.toString()); setActiveTab('upload-anime'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="px-3 py-1 bg-blue-600 text-white rounded">Upload Chương</button>
+                            <button onClick={() => deleteStory(s.id)} className="px-3 py-1 bg-red-700 text-white rounded">Delete</button>
+                          </td>
+                        </tr>
+
+                        {editingId === s.id && (
+                          <tr key={`edit-${s.id}`} className="bg-gray-800">
+                            <td colSpan={4} className="p-4">
+                              <div className="grid gap-3">
+                                <input
+                                  name="title"
+                                  value={editingForm.title}
+                                  onChange={handleEditingChange}
+                                  className="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600"
+                                  placeholder="Tiêu đề truyện"
+                                />
+                                <textarea
+                                  name="description"
+                                  value={editingForm.description}
+                                  onChange={handleEditingChange}
+                                  rows={4}
+                                  className="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600"
+                                  placeholder="Mô tả truyện"
+                                />
+
+                                <div>
+                                  <label className="block text-gray-300 text-sm font-semibold mb-2">Ảnh Bìa</label>
+                                  <div className="flex gap-3">
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={handleEditingImageChange}
+                                      disabled={editingImageUploading}
+                                      className="flex-1 bg-gray-700 text-gray-400 px-3 py-2 rounded border border-gray-600 hover:border-yellow-500 cursor-pointer text-sm"
+                                    />
+                                    {editingImageUploading && <span className="text-yellow-500 text-sm">Uploading...</span>}
+                                  </div>
+                                  {editingImagePreview && (
+                                    <div className="mt-2">
+                                      <img src={editingImagePreview} alt="Preview" className="w-24 h-32 object-cover rounded border border-gray-600" />
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div className="flex gap-2 mt-2">
+                                  <button onClick={submitEdit} disabled={editingSaving || editingImageUploading} className="px-3 py-1 bg-yellow-600 text-black rounded">
+                                    {editingSaving ? 'Saving...' : 'Lưu'}
+                                  </button>
+                                  <button onClick={cancelEdit} className="px-3 py-1 bg-gray-700 text-white rounded">Hủy</button>
+                                </div>
+
+                                {editingError && <div className="text-red-400 mt-2">{editingError}</div>}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
       </div>
