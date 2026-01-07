@@ -4,6 +4,7 @@ import { BackgroundImages } from '@/components/BackgroundImages';
 import { AnimeGrid } from '@/components/AnimeGrid';
 import { TrendingItem } from '@/components/TrendingItem';
 import { useTrendingAnimes, useNewReleases } from '@/hooks/useAnime';
+import { animeService } from '@/services/animeService';
 import { Anime } from '@/types';
 import { Loader } from 'lucide-react';
 
@@ -40,28 +41,17 @@ export function Home() {
     try {
       setLoadingMore(true);
       const nextPage = trendingPage + 1;
-      const token = localStorage.getItem('token');
       
-      const response = await fetch(
-        `http://localhost:5000/api/anime/trending?limit=40&page=${nextPage}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+      // Use animeService to fetch trending with proper data conversion
+      const result = await animeService.getTrendingAnimes(nextPage);
       
-      const data = await response.json();
-      
-      if (data.success && data.data && data.data.length > 0) {
-        setAllTrending([...allTrending, ...data.data]);
+      if (result.items && result.items.length > 0) {
+        setAllTrending([...allTrending, ...result.items]);
         setTrendingPage(nextPage);
       } else {
         setHasMore(false);
       }
     } catch (error) {
-      console.error('Error loading more trending:', error);
       setHasMore(false);
     } finally {
       setLoadingMore(false);
@@ -101,8 +91,7 @@ export function Home() {
         <section>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-              <span>▶</span>
-              <span>Tiếp tục Xem</span>
+              <span>Tiếp tục Đọc </span>
             </h2>
           </div>
           <AnimeGrid

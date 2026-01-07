@@ -102,7 +102,7 @@ export function Navbar({ onSearch }: NavbarProps) {
               Trang chủ
             </Link>
             <Link to="/anime-list" className="text-gray-300 hover:text-white transition-colors">
-              Danh sách Anime
+              Danh sách Truyện
             </Link>
             <Link to="/new-seasons" className="text-gray-300 hover:text-white transition-colors">
               Mùa mới
@@ -319,7 +319,7 @@ export function Navbar({ onSearch }: NavbarProps) {
               className="block text-gray-300 px-4 py-2 hover:bg-gray-800 rounded"
               onClick={() => setIsMenuOpen(false)}
             >
-              Danh sách Anime
+              Danh sách Truyện
             </Link>
             <Link
               to="/new-seasons"

@@ -26,7 +26,7 @@ export function Footer() {
               </li>
               <li>
                 <Link to="/anime-list" className="text-gray-400 hover:text-gold-500 transition-colors">
-                  Danh sách Anime
+                  Danh sách Truyện
                 </Link>
               </li>
               <li>

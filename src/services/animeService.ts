@@ -34,10 +34,21 @@ interface SearchResponse {
 
 // Convert snake_case from backend to camelCase for frontend
 const convertAnimeData = (data: any): Anime => {
+  let imageUrl = data.image || data.thumb_url || '';
+  
+  // ✅ If image starts with /uploads/, prepend the API base URL
+  if (imageUrl && imageUrl.startsWith('/uploads/')) {
+    // Remove /api from baseURL to get the server URL
+    const serverUrl = API_BASE_URL.replace('/api', '');
+    imageUrl = serverUrl + imageUrl;
+  }
+  
+
+  
   return {
     id: data._id || data.id || '',
     title: data.name || data.title || '',
-    image: data.thumb_url || data.image || '',
+    image: imageUrl,  // ✅ Now has full URL
     description: data.content || data.description || '',
     episodeCount: data.episode_count || data.chaptersLatest?.length || 0,
     currentEpisode: data.current_episode || data.chaptersLatest?.[0]?.chapter_name || 'N/A',
