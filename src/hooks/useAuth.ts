@@ -21,9 +21,7 @@ class AuthStore {
       try {
         this.user = JSON.parse(storedUser);
         this.token = storedToken;
-        console.log('🌍 Auth Store Initialized:', this.user?.username);
       } catch (e) {
-        console.error('❌ Failed to parse auth:', e);
         localStorage.removeItem('user');
         localStorage.removeItem('token');
       }
@@ -85,7 +83,6 @@ export const useAuth = (): UseAuthReturn => {
     const unsubscribe = authStore.subscribe(() => {
       setToken(authStore.getToken());
       setUser(authStore.getUser());
-      console.log('🔄 Auth Store Changed:', authStore.getUser()?.username);
     });
 
     return unsubscribe;
@@ -95,8 +92,6 @@ export const useAuth = (): UseAuthReturn => {
     setIsLoading(true);
     setError(null);
     try {
-      console.log('🔐 Logging in...');
-      
       const res = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -114,15 +109,11 @@ export const useAuth = (): UseAuthReturn => {
         throw new Error('Invalid response from server');
       }
 
-      console.log('✅ Login successful:', userData.username);
-
-      // ✅ Update store - will notify all subscribers
       authStore.setAuth(access_token, userData);
       
       return data;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Login failed';
-      console.error('❌ Login error:', message);
       setError(message);
       throw err;
     } finally {
@@ -135,8 +126,6 @@ export const useAuth = (): UseAuthReturn => {
       setIsLoading(true);
       setError(null);
       try {
-        console.log('📝 Registering...');
-        
         const res = await fetch(`${API_URL}/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -149,13 +138,11 @@ export const useAuth = (): UseAuthReturn => {
           throw new Error(data.message || data.error || 'Registration failed');
         }
 
-        console.log('✅ Registration successful');
         setError(null);
         
         return data;
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Registration failed';
-        console.error('❌ Registration error:', message);
         setError(message);
         throw err;
       } finally {
@@ -166,33 +153,10 @@ export const useAuth = (): UseAuthReturn => {
   );
 
   const logout = useCallback(() => {
-    console.log('👋 Logging out...');
     authStore.clear();
   }, []);
 
   const isAuthenticated = !!token && !!user;
-
-  // Debug log
-  useEffect(() => {
-    console.log('🔍 Auth State Updated:', {
-      isInitialized,
-      isAuthenticated,
-      username: user?.username,
-      hasToken: !!token,
-    });
-  }, [isAuthenticated, user, token, isInitialized]);
-
-  const debugState = useCallback(() => {
-    return {
-      isAuthenticated,
-      isInitialized,
-      hasUser: !!user,
-      hasToken: !!token,
-      username: user?.username,
-      tokenInStorage: !!localStorage.getItem('token'),
-      userInStorage: !!localStorage.getItem('user')
-    };
-  }, [isAuthenticated, isInitialized, user, token]);
 
   return {
     user,
@@ -205,6 +169,5 @@ export const useAuth = (): UseAuthReturn => {
     isAuthenticated,
     isInitialized,
     isAdmin: user?.role === 'admin',
-    debugState,
   };
 };

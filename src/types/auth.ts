@@ -36,7 +36,6 @@ export interface UseAuthReturn {
   isAuthenticated: boolean;
   isInitialized: boolean;
   isAdmin: boolean;
-  debugState: () => DebugState;
 }
 
 export interface AuthContextType extends UseAuthReturn {}

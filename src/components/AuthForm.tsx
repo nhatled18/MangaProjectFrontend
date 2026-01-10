@@ -12,6 +12,7 @@ export const AuthForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [localError, setLocalError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const { login, register, isLoading, error, isAuthenticated } = useAuth();
@@ -35,6 +36,7 @@ export const AuthForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError(null);
+    setSuccessMessage(null);
 
     try {
       if (mode === 'login') {
@@ -61,7 +63,8 @@ export const AuthForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         setUsername('');
         setPassword('');
         setConfirmPassword('');
-        setLocalError('Đăng ký thành công! Vui lòng đăng nhập với tài khoản của bạn.');
+        setEmail('');
+        setSuccessMessage('Đăng ký thành công! Vui lòng đăng nhập với tài khoản của bạn.');
       }
     } catch (err) {
       console.error('❌ Lỗi xác thực:', err);
@@ -69,7 +72,7 @@ export const AuthForm = ({ onSuccess }: { onSuccess?: () => void }) => {
     }
   };
 
-  const displayError = localError || error;
+  const displayError = localError || (mode === 'login' && error);
 
   return (
     <div className="auth-container">
@@ -78,6 +81,7 @@ export const AuthForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
         <form onSubmit={handleSubmit} className="auth-form">
           {displayError && <div className="error-message">{displayError}</div>}
+          {successMessage && <div className="success-message">{successMessage}</div>}
 
           <div className="form-group">
             <label htmlFor="username">Username</label>
@@ -148,6 +152,7 @@ export const AuthForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 onClick={() => {
                   setMode('register');
                   setLocalError(null);
+                  setSuccessMessage(null);
                 }} 
                 className="toggle-button"
                 disabled={isLoading}
@@ -162,6 +167,7 @@ export const AuthForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 onClick={() => {
                   setMode('login');
                   setLocalError(null);
+                  setSuccessMessage(null);
                 }} 
                 className="toggle-button"
                 disabled={isLoading}
