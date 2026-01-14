@@ -3,7 +3,6 @@ import { User, AuthResponse, UseAuthReturn } from '../types/auth';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-// ✅ Simple observable store to notify all subscribers when auth changes
 class AuthStore {
   private token: string | null = null;
   private user: User | null = null;

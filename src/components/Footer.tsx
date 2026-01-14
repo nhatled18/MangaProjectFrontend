@@ -11,7 +11,7 @@ export function Footer() {
           <div>
             <h3 className="text-white font-bold text-lg mb-4">Về chúng tôi</h3>
             <p className="text-gray-400 text-sm">
-              LOGO ANIME là nền tảng xem anime và đọc manga trực tuyến hàng đầu với chất lượng cao và cập nhật nhanh nhất.
+              Truyenvui là nền tảng xem anime và đọc manga trực tuyến hàng đầu với chất lượng cao và cập nhật nhanh nhất.
             </p>
           </div>
 
