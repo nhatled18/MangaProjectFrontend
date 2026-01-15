@@ -13,7 +13,7 @@
         <VBox style="-fx-background-color: #0d0d0d; -fx-border-color: #333; -fx-border-width: 0 0 1 0;">
             <HBox spacing="15" style="-fx-padding: 10 20; -fx-alignment: CENTER_LEFT;">
                 <!-- Logo -->
-                <Label text="LOGO ANIME" style="-fx-text-fill: #FFB800; -fx-font-size: 18; -fx-font-weight: bold;"/>
+                <Label text="FTVN" style="-fx-text-fill: #FFB800; -fx-font-size: 18; -fx-font-weight: bold;"/>
                 
                 <!-- Search Bar -->
                 <HBox spacing="5" style="-fx-background-color: #2a2a2a; -fx-padding: 8 12; -fx-border-radius: 5;">

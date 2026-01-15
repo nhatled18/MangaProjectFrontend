@@ -74,7 +74,7 @@ export function Navbar({ onSearch }: NavbarProps) {
         <div className="flex items-center justify-between h-16 gap-8">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-            <div className="text-yellow-500 text-2xl font-bold">TRUYENVUI</div>
+            <div className="text-yellow-500 text-2xl font-bold">FTVN</div>
           </Link>
 
           {/* Search Bar - Desktop */}
