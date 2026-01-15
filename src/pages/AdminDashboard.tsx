@@ -393,8 +393,8 @@ export function AdminDashboard() {
         const storiesWithFixedImages = data.data.animes?.map((story: any) => ({
           ...story,
           image: story.image && story.image.startsWith('/uploads/') 
-            ? `${apiUrl.replace('/admin', '')}${story.image}` 
-            : story.image
+          ? `${window.location.origin}${story.image}` 
+          : story.image
         })) || [];
         
         setMyStories(storiesWithFixedImages);
