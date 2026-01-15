@@ -11,7 +11,7 @@ export function Footer() {
           <div>
             <h3 className="text-white font-bold text-lg mb-4">Về chúng tôi</h3>
             <p className="text-gray-400 text-sm">
-              FTVN là nền tảng đọc manga Fairy Tail trực tuyến hàng đầu với chất lượng cao và cập nhật nhanh nhất.
+              FAIRYTAILVIETNAM là nền tảng đọc manga Fairy Tail trực tuyến hàng đầu với chất lượng cao và cập nhật nhanh nhất.
             </p>
           </div>
 
@@ -64,7 +64,7 @@ export function Footer() {
 
         {/* Bottom */}
         <div className="border-t border-gray-700 pt-8 text-center text-gray-400 text-sm">
-          <p>&copy; 2025 FTVN. All rights reserved.</p>
+          <p>&copy; 2025 FAIRYTAILVIETNAM. All rights reserved.</p>
         </div>
       </div>
     </footer>
