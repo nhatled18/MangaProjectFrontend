@@ -46,7 +46,12 @@ export function Home() {
       const result = await animeService.getTrendingAnimes(nextPage);
       
       if (result.items && result.items.length > 0) {
-        setAllTrending([...allTrending, ...result.items]);
+        setAllTrending(prev => {
+          // Avoid duplicates by checking if item already exists
+          const existingIds = new Set(prev.map(a => a.id));
+          const newItems = result.items.filter(item => !existingIds.has(item.id));
+          return [...prev, ...newItems];
+        });
         setTrendingPage(nextPage);
       } else {
         setHasMore(false);
@@ -56,7 +61,7 @@ export function Home() {
     } finally {
       setLoadingMore(false);
     }
-  }, [trendingPage, loadingMore, hasMore, allTrending]);
+  }, [trendingPage, loadingMore, hasMore]);
 
   // Infinite scroll observer
   useEffect(() => {
@@ -140,7 +145,7 @@ export function Home() {
             <>
               {allTrending.map((anime, index) => (
                 <TrendingItem
-                  key={`${anime.id}-${index}`}
+                  key={anime.id}
                   anime={anime}
                   rank={index + 1}
                   onClick={handleAnimeClick}

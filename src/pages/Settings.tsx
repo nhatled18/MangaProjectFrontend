@@ -16,7 +16,6 @@ export function Settings() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
-  const [debugInfo, setDebugInfo] = useState<any>(null);
 
   // Get API URL from environment or use default
   const getApiUrl = () => {
@@ -68,19 +67,7 @@ export function Settings() {
         newPassword: passwords.new,
       };
 
-      console.log('🔍 DEBUG INFO:');
-      console.log('📤 Token:', token.substring(0, 20) + '...');
-      console.log('📤 Payload:', payload);
-      console.log('📤 Payload keys:', Object.keys(payload));
-      
-      setDebugInfo({
-        timestamp: new Date().toISOString(),
-        hasToken: !!token,
-        tokenLength: token?.length,
-        payloadKeys: Object.keys(payload),
-        payloadValues: payload,
-      });
-      
+
       const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/auth/change-password`, {
         method: 'POST',
@@ -91,17 +78,11 @@ export function Settings() {
         body: JSON.stringify(payload),
       });
 
-      console.log('📥 Response Status:', response.status);
-      console.log('📥 Response Headers:', response.headers);
-
       const data = await response.json();
-      console.log('📥 Response Body:', data);
 
       if (!response.ok) {
         const errorMsg = data.error || data.message || `Error ${response.status}`;
-        console.error('❌ Error:', errorMsg);
         setMessage({ type: 'error', text: errorMsg });
-        setDebugInfo((prev: any) => ({ ...prev, error: data }));
         setLoading(false);
         return;
       }
@@ -110,7 +91,6 @@ export function Settings() {
       setPasswords({ current: '', new: '', confirm: '' });
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Lỗi khi kết nối đến server';
-      console.error('❌ Exception:', errorMsg);
       setMessage({ 
         type: 'error', 
         text: errorMsg
@@ -147,22 +127,6 @@ export function Settings() {
         {message && (
           <div className={`mb-6 p-4 rounded-lg transition-all ${message.type === 'success' ? 'bg-green-500 bg-opacity-20 border border-green-500 text-green-300' : 'bg-red-500 bg-opacity-20 border border-red-500 text-red-300'}`}>
             {message.text}
-          </div>
-        )}
-
-        {/* Debug Info */}
-        {debugInfo && (
-          <div className="mb-6 p-4 rounded-lg bg-blue-500 bg-opacity-20 border border-blue-500 text-blue-300 text-sm">
-            <p className="font-semibold mb-2">🐛 Debug Info:</p>
-            <pre className="text-xs overflow-auto bg-gray-900 p-2 rounded">
-              {JSON.stringify(debugInfo, null, 2)}
-            </pre>
-            <button
-              onClick={() => setDebugInfo(null)}
-              className="mt-2 text-xs bg-blue-600 px-2 py-1 rounded hover:bg-blue-500"
-            >
-              ✕ Đóng
-            </button>
           </div>
         )}
 
