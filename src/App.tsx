@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Navbar } from '@/components/Navbar';
+import { MarqueeLeaderboard } from '@/components/MarqueeLeaderboard';
 
 // Pages
 import { Home } from '@/pages/Home';
@@ -13,6 +14,8 @@ import { SearchResults } from '@/pages/SearchResults';
 import { Profile } from '@/pages/Profile';
 import { Settings } from '@/pages/Settings';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { TokenShopPage } from '@/pages/TokenShopPage';
+import { LeaderboardPage } from '@/pages/LeaderboardPage';
 
 import './App.css';
 
@@ -30,6 +33,7 @@ function App() {
   return (
     <Router>
       <div className="flex flex-col min-h-screen">
+        <MarqueeLeaderboard />
         <Navbar />
 
         <main className="flex-1">
@@ -42,10 +46,11 @@ function App() {
             <Route path="/new-seasons" element={<NewSeasons />} />
             <Route path="/popular" element={<Popular />} />
             <Route path="/search" element={<SearchResults />} />
-            
-            {/* ✅ Profile & Settings - chỉ hiển thị khi đã login */}
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
+            {/* ✅ Token Shop & Profile - chỉ hiển thị khi đã login */}
             {auth.isAuthenticated && (
               <>
+                <Route path="/token-shop" element={<TokenShopPage />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/admin" element={<AdminDashboard />} />

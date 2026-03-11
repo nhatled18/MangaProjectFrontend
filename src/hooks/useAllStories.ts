@@ -19,7 +19,6 @@ export const useAllStories = (page: number = 1) => {
         setTotalItems(response.totalItems || 0);
       } catch (err) {
         setError('Failed to fetch stories');
-        console.error(err);
       } finally {
         setLoading(false);
       }

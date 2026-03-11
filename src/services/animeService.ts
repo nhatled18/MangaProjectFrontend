@@ -9,6 +9,18 @@ const apiClient = axios.create({
   },
 });
 
+// Add JWT token interceptor
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 // Types for API responses
 // interface PaginationResponse {
 //   items: any[];
@@ -188,11 +200,13 @@ export const animeService = {
   // Get chapter content
   getChapterContent: async (chapterId: string) => {
     try {
-      const response = await apiClient.get(`/chapter/${chapterId}`);
-      return response.data.data || null;
+      const response = await apiClient.get('/chapter', {
+        params: { id: chapterId }
+      });
+      return response.data || null;
     } catch (error) {
       console.error('Error fetching chapter content:', error);
-      return null;
+      throw error;
     }
   },
 };

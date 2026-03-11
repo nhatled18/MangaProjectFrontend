@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Anime } from '@/types';
-import { Play, Heart, Share2, Star, Loader } from 'lucide-react';
+import { Play, Heart, Share2, Star, Loader, Lock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { animeService } from '@/services/animeService'; // ✅ THÊM
 
@@ -10,6 +10,7 @@ interface Chapter {
   title: string;
   description?: string;
   pageCount?: number;
+  isUnlocked?: boolean; // ✅ Add this
 }
 
 export function AnimeDetail() {
@@ -31,15 +32,12 @@ export function AnimeDetail() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const animeIdentifier = anime.slug || anime.id;
-      console.log('Fetching chapters for:', animeIdentifier);
-      
+
       // ✅ SỬA: Dùng animeService.getEpisodes
       const chaptersData = await animeService.getEpisodes(animeIdentifier);
-      
-      console.log('Chapters response:', chaptersData);
-      
+
       if (!chaptersData || chaptersData.length === 0) {
         setError('Anime này chưa có chapters');
       } else {
@@ -51,11 +49,11 @@ export function AnimeDetail() {
           title: ch.title || ch.chapter_title || ch.filename || `Chapter ${ch.chapterNumber || ch.chapter_number}`,
           description: ch.description || '',
           pageCount: ch.pageCount || ch.pages?.length || 0,
+          isUnlocked: ch.isUnlocked !== undefined ? ch.isUnlocked : true, // ✅ Default to true if not provided (for external sources)
         }));
         setChapters(mappedChapters);
       }
     } catch (error) {
-      console.error('Error fetching chapters:', error);
       setError('Failed to load chapters. Please try again.');
     } finally {
       setLoading(false);
@@ -126,7 +124,7 @@ export function AnimeDetail() {
                 </div>
                 <div className="flex gap-4">
                   {chapters.length > 0 && (
-                    <button 
+                    <button
                       onClick={() => handleChapterClick(chapters[0])}
                       className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-6 py-3 rounded-lg transition-colors"
                     >
@@ -186,18 +184,44 @@ export function AnimeDetail() {
               </button>
             </div>
           ) : chapters.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <div className="flex flex-col gap-3">
               {chapters.map((chapter) => (
                 <button
                   key={chapter.id}
                   onClick={() => handleChapterClick(chapter)}
-                  className="p-4 rounded-lg font-semibold transition-colors bg-gray-800 text-white hover:bg-yellow-500 hover:text-black"
-                  title={chapter.title || `Chapter ${chapter.chapterNumber}`}
+                  className="group flex items-center justify-between p-4 rounded-xl transition-all duration-300 bg-gray-800 border border-gray-700 hover:border-yellow-500 hover:bg-gray-700/50"
                 >
-                  <div>Chap {chapter.chapterNumber}</div>
-                  {(chapter.pageCount ?? 0) > 0 && (
-                    <div className="text-xs text-gray-400">{chapter.pageCount} pages</div>
-                  )}
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 flex items-center justify-center rounded-lg bg-gray-900 text-yellow-500 font-bold border border-gray-700 group-hover:border-yellow-500 group-hover:bg-yellow-500 group-hover:text-black transition-colors relative">
+                      {chapter.chapterNumber}
+                      {!chapter.isUnlocked && (
+                        <div className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 border-2 border-gray-800">
+                          <Lock size={10} fill="currentColor" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-left">
+                      <div className="flex items-center gap-2">
+                        <div className="text-white font-bold text-lg group-hover:text-yellow-500 transition-colors">
+                          {chapter.title || `Chapter ${chapter.chapterNumber}`}
+                        </div>
+                        {!chapter.isUnlocked && (
+                          <span className="px-2 py-0.5 bg-red-500/10 text-red-500 text-[10px] font-bold rounded border border-red-500/20 uppercase tracking-wider">
+                            Premium
+                          </span>
+                        )}
+                      </div>
+                      {(chapter.pageCount ?? 0) > 0 && (
+                        <div className="text-sm text-gray-400 group-hover:text-gray-300">
+                          {chapter.pageCount} trang
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="px-4 py-2 rounded-lg bg-gray-900 text-gray-400 group-hover:bg-yellow-500 group-hover:text-black font-semibold text-sm transition-all flex items-center gap-2">
+                    {!chapter.isUnlocked && <Lock size={14} />}
+                    {chapter.isUnlocked ? 'Đọc ngay' : 'Mở khóa'}
+                  </div>
                 </button>
               ))}
             </div>

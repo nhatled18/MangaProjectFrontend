@@ -30,3 +30,45 @@ export interface Episode {
   duration: number;
   releaseDate: string;
 }
+// Token System Types
+export interface TokenPackage {
+  tokens: number;
+  price: number;
+  pricePerToken: number;
+}
+
+export interface TokenTransaction {
+  id: number;
+  userId: number;
+  amount: number;
+  type: 'purchase' | 'unlock' | 'refund' | 'admin';
+  status: 'pending' | 'completed' | 'failed' | 'cancelled';
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ChapterUnlock {
+  id: number;
+  userId: number;
+  chapterId: number;
+  tokensSpent: number;
+  unlockedAt?: string;
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  userId: number;
+  username: string;
+  tokensSpent: number;
+  tokensPurchased?: number;
+  chaptersUnlocked: number;
+}
+
+export interface UserStatistics {
+  userId: number;
+  username: string;
+  totalTokensSpent: string;
+  chaptersUnlocked: number;
+  rank?: number | string;
+}

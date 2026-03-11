@@ -64,7 +64,7 @@ export function Navbar({ onSearch }: NavbarProps) {
         setIsLoginFormOpen(false);
       }
     } catch (err) {
-      console.error('Login error:', err);
+      setLoginError(err instanceof Error ? err.message : 'Đăng nhập thất bại');
     }
   };
 
@@ -148,11 +148,31 @@ export function Navbar({ onSearch }: NavbarProps) {
                       </div>
 
                       <button
+                        onClick={() => {
+                          navigate('/token-shop');
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-blue-400 hover:bg-gray-700 hover:text-blue-300 transition-colors font-semibold text-sm border-b border-gray-700"
+                      >
+                        ⭐ Mua Token
+                      </button>
+
+                      <button
                         onClick={handleProfileClick}
                         className="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-yellow-500 transition-colors flex items-center gap-2"
                       >
                         <User size={16} />
                         Hồ sơ cá nhân
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          navigate('/leaderboard');
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-yellow-500 transition-colors"
+                      >
+                        🏆 Bảng Xếp Hạng
                       </button>
 
                       <button
@@ -342,7 +362,7 @@ export function Navbar({ onSearch }: NavbarProps) {
                 className="block text-red-400 px-4 py-2 hover:bg-gray-800 rounded font-semibold"
                 onClick={() => setIsMenuOpen(false)}
               >
-                🛡️ Admin Dashboard
+                Admin Dashboard
               </Link>
             )}
 
