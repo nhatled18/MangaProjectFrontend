@@ -2,7 +2,6 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Footer } from '@/components/Footer';
 import { ChevronLeft, ChevronRight, Loader, Lock, CreditCard, Coins, LogIn } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { tokenService } from '@/services/tokenService';
 import { animeService } from '@/services/animeService';
 
@@ -32,7 +31,7 @@ export function ChapterViewer() {
   const [isLocked, setIsLocked] = useState(false);
   const [unlocking, setUnlocking] = useState(false);
   const [tokenBalance, setTokenBalance] = useState<number>(0);
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
+  const [isLoggedIn] = useState(!!localStorage.getItem('token'));
 
   // Get API URL from environment or use default
   const getApiUrl = () => {
@@ -269,7 +268,7 @@ export function ChapterViewer() {
             
             <h2 className="text-3xl font-bold text-white mb-2">Chương này đang bị khóa</h2>
             <p className="text-gray-400 mb-8 max-w-md">
-              Đây là chương mới vừa được cập nhật. Bạn có thể mở khóa ngay bằng Token hoặc đợi 7 ngày để đọc miễn phí.
+              Chương {chapterData?.chapterNumber} hiện đang bị khóa. Bạn có thể mở khóa ngay bằng 20 Token hoặc đợi 7 ngày để đọc miễn phí.
             </p>
             
             {isLoggedIn ? (
@@ -292,12 +291,12 @@ export function ChapterViewer() {
                   ) : (
                     <>
                       <Lock size={20} />
-                      Mở khóa ngay (5 Token)
+                      Mở khóa ngay (20 Token)
                     </>
                   )}
                 </button>
                 
-                {tokenBalance < 5 && (
+                {tokenBalance < 20 && (
                   <button 
                     onClick={() => navigate('/token-shop')}
                     className="w-full mt-4 flex items-center justify-center gap-2 text-yellow-500 hover:text-yellow-400 font-semibold"
@@ -316,7 +315,7 @@ export function ChapterViewer() {
                   <LogIn size={20} />
                   Đăng nhập để xem
                 </button>
-                <p className="text-gray-500 text-sm">Bạn cần 5 token để mở khóa chương này</p>
+                <p className="text-gray-500 text-sm">Bạn cần 20 token để mở khóa chương này</p>
               </div>
             )}
             

@@ -5,6 +5,7 @@ export interface User {
   role: 'admin' | 'user';
   is_active: boolean;
   created_at: string;
+  token_balance?: number;
 }
 
 export interface AuthResponse {
@@ -33,6 +34,7 @@ export interface UseAuthReturn {
   login: (username: string, password: string) => Promise<AuthResponse>;
   register: (username: string, email: string, password: string) => Promise<AuthResponse>;
   logout: () => void;
+  updateUser: (data: Partial<User>) => void;
   isAuthenticated: boolean;
   isInitialized: boolean;
   isAdmin: boolean;

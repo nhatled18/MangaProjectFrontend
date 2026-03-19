@@ -733,7 +733,6 @@ export function AdminDashboard() {
             <Plus size={18} />
             Upload Truyện & Chương
           </button>
-
           <button
             onClick={() => { setActiveTab('my-stories'); fetchMyStories(); }}
             className={`px-4 py-2 font-semibold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'my-stories'

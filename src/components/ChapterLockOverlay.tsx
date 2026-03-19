@@ -58,7 +58,7 @@ const ChapterLockOverlay: React.FC<ChapterLockOverlayProps> = ({
 
   if (!isOpen) return null;
 
-  const unlockCost = 5;
+  const unlockCost = 20;
   const canUnlock = tokenBalance >= unlockCost;
 
   return (
@@ -68,7 +68,9 @@ const ChapterLockOverlay: React.FC<ChapterLockOverlayProps> = ({
         <div className="text-center mb-6">
           <div className="text-5xl mb-3">🔒</div>
           <h2 className="text-2xl font-bold text-gray-800">Chapter Bị Khóa</h2>
-          <p className="text-gray-600 mt-2">Chapter {chapterNumber} chỉ dành cho thành viên VIP</p>
+          <p className="text-gray-600 mt-2 px-4 text-sm">
+            Chương {chapterNumber} hiện đang bị khóa. Bạn có thể mở khóa ngay bằng 20 Token hoặc đợi 7 ngày để đọc miễn phí.
+          </p>
         </div>
 
         {/* Messages */}
@@ -133,8 +135,8 @@ const ChapterLockOverlay: React.FC<ChapterLockOverlayProps> = ({
 
         {/* Info */}
         <div className="mt-6 text-center text-sm text-gray-600">
-          <p>✨ Mở khóa chap để đọc nội dung mới nhất</p>
-          <p className="mt-1">📈 Tham gia leaderboard để cạnh tranh vị trí cao</p>
+          <p>✨ Chapter này sẽ trở nên miễn phí sau 7 ngày</p>
+          <p className="mt-1">💖 Sự ủng hộ của bạn là động lực lớn nhất của nhóm</p>
         </div>
       </div>
     </div>

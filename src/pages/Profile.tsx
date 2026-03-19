@@ -62,6 +62,16 @@ export function Profile() {
             </div>
           </div>
 
+          <div className="flex items-center gap-4 pb-6 border-b border-gray-800">
+            <div className="w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center text-[10px] font-bold text-gray-900">
+              $
+            </div>
+            <div>
+              <p className="text-gray-400 text-sm">Số dư Token</p>
+              <p className="text-white font-semibold">{user.token_balance?.toLocaleString() ?? 0} Token</p>
+            </div>
+          </div>
+
           <div className="flex items-center gap-4">
             <Calendar size={20} className="text-yellow-500" />
             <div>

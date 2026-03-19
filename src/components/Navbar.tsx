@@ -84,7 +84,7 @@ export function Navbar({ onSearch }: NavbarProps) {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Tìm kiếm Anime..."
+                placeholder="Tìm kiếm truyện..."
                 className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
               />
               <button
@@ -134,9 +134,14 @@ export function Navbar({ onSearch }: NavbarProps) {
                     className="text-gray-400 hover:text-yellow-500 p-2 flex items-center gap-2"
                   >
                     <User size={20} />
-                    <span className="hidden sm:inline text-gray-300 text-sm max-w-[100px] truncate">
-                      {user?.username}
-                    </span>
+                    <div className="hidden sm:flex flex-col items-start leading-tight">
+                      <span className="text-gray-300 text-sm max-w-[100px] truncate">
+                        {user?.username}
+                      </span>
+                      <span className="text-yellow-500 text-[10px] font-bold">
+                        {user?.token_balance?.toLocaleString() ?? 0} TOKEN
+                      </span>
+                    </div>
                   </button>
 
                   {/* Dropdown Menu */}

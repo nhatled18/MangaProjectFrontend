@@ -59,6 +59,26 @@ class AuthStore {
     this.notify();
   }
 
+  updateUser(updatedUser: Partial<User>) {
+    if (this.user) {
+      this.user = { ...this.user, ...updatedUser };
+      localStorage.setItem('user', JSON.stringify(this.user));
+      this.notify();
+    } else {
+      // If user isn't in memory but is in localStorage, try updating localStorage anyway
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          const user = JSON.parse(storedUser);
+          const newUser = { ...user, ...updatedUser };
+          localStorage.setItem('user', JSON.stringify(newUser));
+        } catch (e) {
+          console.error('Error updating stored user:', e);
+        }
+      }
+    }
+  }
+
   clear() {
     this.token = null;
     this.user = null;
@@ -165,6 +185,7 @@ export const useAuth = (): UseAuthReturn => {
     login,
     register,
     logout,
+    updateUser: (data: Partial<User>) => authStore.updateUser(data),
     isAuthenticated,
     isInitialized,
     isAdmin: user?.role === 'admin',

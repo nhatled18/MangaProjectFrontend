@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { tokenService } from '@/services/tokenService';
+import { useAuth } from '@/hooks/useAuth';
 import { TokenPackage } from '@/types';
 import BankTransferModal from './BankTransferModal';
 import TransactionHistory from './TransactionHistory';
@@ -13,7 +14,8 @@ interface TokenShopProps {
 const TokenShop: React.FC<TokenShopProps> = ({ onClose, onSuccess }) => {
   const [packages, setPackages] = useState<TokenPackage[]>([]);
   const [loading, setLoading] = useState(false);
-  const [tokenBalance, setTokenBalance] = useState(0);
+  const { user, updateUser } = useAuth();
+  const tokenBalance = user?.token_balance ?? 0;
   const [selectedPackage, setSelectedPackage] = useState<TokenPackage | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -22,28 +24,20 @@ const TokenShop: React.FC<TokenShopProps> = ({ onClose, onSuccess }) => {
 
   useEffect(() => {
     loadData();
-
-    const handleUpdate = (e: any) => {
-      if (e.detail?.balance !== undefined) {
-        setTokenBalance(e.detail.balance);
-      } else {
-        loadData();
-      }
-    };
-
-    window.addEventListener('tokenBalanceUpdated', handleUpdate);
-    return () => window.removeEventListener('tokenBalanceUpdated', handleUpdate);
   }, []);
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const [pkgs, balance] = await Promise.all([
+      const [pkgs, currentBalance] = await Promise.all([
         tokenService.getTokenPackages(),
         tokenService.getTokenBalance(),
       ]);
       setPackages(pkgs);
-      setTokenBalance(balance);
+      // Sync balance to auth store if it's different
+      if (currentBalance !== user?.token_balance) {
+        updateUser({ token_balance: currentBalance });
+      }
     } catch (err) {
       setError('Không thể tải dữ liệu');
     } finally {
@@ -58,9 +52,12 @@ const TokenShop: React.FC<TokenShopProps> = ({ onClose, onSuccess }) => {
     setSuccess('');
   };
 
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = (newBalance?: number) => {
     setPaymentModalOpen(false);
     setSuccess('Thanh toán thành công! Token đã được cộng vào tài khoản.');
+    if (newBalance !== undefined) {
+      updateUser({ token_balance: newBalance });
+    }
     loadData();
     onSuccess?.();
   };
@@ -83,12 +80,14 @@ const TokenShop: React.FC<TokenShopProps> = ({ onClose, onSuccess }) => {
           <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-700">
             Cửa Hàng Token
           </h2>
-          <p className="text-gray-500 mt-1 font-medium italic">Tiếp thêm năng lượng cho niềm đam mê manga của bạn</p>
+          <p className="text-gray-500 mt-1 font-medium italic">
+            Sự đóng góp của bạn giúp chúng mình có thêm kinh phí duy trì và cập nhật truyện nhanh hơn
+          </p>
         </div>
         <div className="bg-blue-50 px-5 py-3 rounded-2xl border border-blue-100 shadow-sm flex flex-col items-center">
           <p className="text-[10px] uppercase tracking-widest font-bold text-blue-500 mb-1">Số dư hiện tại</p>
           <div className="flex items-center gap-2">
-            <span className="text-2xl font-black text-blue-700">{tokenBalance}</span>
+            <span className="text-2xl font-black text-blue-700">{tokenBalance.toLocaleString()}</span>
             <span className="text-xs font-bold text-blue-400">TOKEN</span>
           </div>
         </div>
@@ -177,9 +176,7 @@ const TokenShop: React.FC<TokenShopProps> = ({ onClose, onSuccess }) => {
                       <span className="text-xs font-bold text-gray-500">đ</span>
                     </div>
                     
-                    <p className="text-[10px] font-bold text-blue-500/60 mb-6 py-1 px-2 bg-blue-100/50 rounded-full inline-block">
-                      {pkg.pricePerToken.toLocaleString('vi-VN')} đ/token
-                    </p>
+                    {/* Price per token badge removed */}
     
                     <button
                       onClick={(e) => {
@@ -213,7 +210,7 @@ const TokenShop: React.FC<TokenShopProps> = ({ onClose, onSuccess }) => {
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-300 relative z-10">
               <li className="flex items-start gap-2 bg-white/5 p-3 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
                 <span className="text-blue-400 font-bold">✓</span>
-                <span>Mở khóa tức thì các chapter mới nhất của manga yêu thích.</span>
+                <span>Mở khóa tức thì các chapter mới nhất (trước 7 ngày khi trở thành miễn phí).</span>
               </li>
               <li className="flex items-start gap-2 bg-white/5 p-3 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
                 <span className="text-blue-400 font-bold">✓</span>
@@ -225,7 +222,7 @@ const TokenShop: React.FC<TokenShopProps> = ({ onClose, onSuccess }) => {
               </li>
               <li className="flex items-start gap-2 bg-white/5 p-3 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
                 <span className="text-blue-400 font-bold">✓</span>
-                <span>Mức giá tối ưu chỉ 5 token cho một chapter chất lượng cao.</span>
+                <span>Mức giá chỉ 20 token cho một chapter sớm chất lượng cao.</span>
               </li>
             </ul>
           </div>

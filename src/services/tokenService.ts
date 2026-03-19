@@ -101,7 +101,7 @@ export const tokenService = {
   },
 
   /**
-   * Lấy lịch sử giao dịch
+   * Lịch sử giao dịch
    */
   getTransactionHistory: async (limit: number = 50): Promise<TokenTransaction[]> => {
     try {
@@ -111,6 +111,21 @@ export const tokenService = {
       return response.data.data.transactions || [];
     } catch (error) {
       return [];
+    }
+  },
+
+  /**
+   * Xác nhận đã chuyển khoản thủ công (VietQR không API)
+   */
+  manualConfirm: async (amount: number, price: number) => {
+    try {
+      const response = await apiClient.post('/shop/manual-confirm', {
+        amount,
+        price,
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Không thể gửi thông báo. Vui lòng thử lại.');
     }
   },
 

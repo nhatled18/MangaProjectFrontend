@@ -19,8 +19,35 @@ import { LeaderboardPage } from '@/pages/LeaderboardPage';
 
 import './App.css';
 
+import { useEffect } from 'react';
+import { tokenService } from '@/services/tokenService';
+
 function App() {
   const auth = useAuth();
+
+  // 🕵️ Cảm biến số dư chạy ngầm (Background Polling)
+  useEffect(() => {
+    if (!auth.isAuthenticated || !auth.user) return;
+
+    const fetchBalance = async () => {
+      try {
+        const balance = await tokenService.getTokenBalance();
+        if (balance !== auth.user?.token_balance) {
+          auth.updateUser({ token_balance: balance });
+          console.log('--- [Auth] Token balance updated automatically ---');
+        }
+      } catch (err) {
+        // Silently fail to not disturb user
+      }
+    };
+
+    // Chạy ngay lần đầu
+    fetchBalance();
+
+    // Và lặp lại sau mỗi 5 giây (Rất nhanh)
+    const interval = setInterval(fetchBalance, 5000);
+    return () => clearInterval(interval);
+  }, [auth.isAuthenticated, auth.user?.id]);
 
   if (!auth.isInitialized) {
     return (
