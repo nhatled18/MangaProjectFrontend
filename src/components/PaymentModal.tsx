@@ -45,7 +45,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
         .substr(2, 9)}`;
 
       // Gọi API confirm purchase
-      const result = await tokenService.confirmPurchase(
+      await tokenService.confirmPurchase(
         transactionId,
         externalTransactionId
       );
