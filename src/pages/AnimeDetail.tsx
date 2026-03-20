@@ -90,28 +90,31 @@ export function AnimeDetail() {
     <div className="min-h-screen bg-gray-900">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
-        <div className="relative h-96 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg overflow-hidden mb-8">
+        <div className="relative min-h-[400px] md:h-96 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg overflow-hidden mb-8">
           <div className="absolute inset-0">
             <img
               src={anime.image || 'https://via.placeholder.com/1200x400'}
               alt={anime.title}
               className="w-full h-full object-cover opacity-30"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-b md:bg-gradient-to-r from-gray-900 via-gray-900/80 to-transparent"></div>
           </div>
 
-          <div className="relative h-full flex items-end p-8">
-            <div className="flex gap-8 items-end">
+          <div className="relative h-full flex items-center md:items-end p-6 md:p-8">
+            <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-end w-full">
               <img
                 src={anime.image || 'https://via.placeholder.com/300x400'}
                 alt={anime.title}
-                className="w-48 h-72 object-cover rounded-lg shadow-2xl"
+                className="w-40 md:w-48 h-60 md:h-72 object-cover rounded-lg shadow-2xl flex-shrink-0"
               />
-              <div className="flex-1 pb-4">
+              <div className="flex-1 text-center md:text-left">
                 <p className="text-yellow-500 text-sm font-semibold mb-2">{anime.type}</p>
-                <h1 className="text-4xl font-bold text-white mb-4">{anime.title}</h1>
-                <p className="text-gray-300 mb-4">{anime.description}</p>
-                <div className="flex gap-4 mb-6 text-sm">
+                <h1 className="text-2xl md:text-4xl font-bold text-white mb-3">{anime.title}</h1>
+                <p className="text-gray-300 mb-4 line-clamp-3 md:line-clamp-none text-sm md:text-md">
+                  {anime.description}
+                </p>
+                
+                <div className="hidden md:flex gap-4 mb-6 text-sm">
                   <span className="text-gray-400">
                     Status: <span className="text-white">{anime.status}</span>
                   </span>
@@ -122,23 +125,25 @@ export function AnimeDetail() {
                     Category: <span className="text-white">{anime.category}</span>
                   </span>
                 </div>
-                <div className="flex gap-4">
+
+                <div className="flex flex-col sm:flex-row gap-3">
                   {chapters.length > 0 && (
                     <button
                       onClick={() => handleChapterClick(chapters[0])}
-                      className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-6 py-3 rounded-lg transition-colors"
+                      className="flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-6 py-3 rounded-lg transition-colors w-full sm:w-auto"
                     >
                       <Play size={20} fill="currentColor" />
-                      Đọc Chapter 1
+                      Đọc ngay
                     </button>
                   )}
-                  <button className="flex items-center gap-2 border-2 border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black font-bold px-6 py-3 rounded-lg transition-colors">
-                    <Heart size={20} />
-                    Thêm vào danh sách
-                  </button>
-                  <button className="flex items-center gap-2 border-2 border-gray-500 text-gray-300 hover:border-yellow-500 hover:text-yellow-500 font-bold px-6 py-3 rounded-lg transition-colors">
-                    <Share2 size={20} />
-                  </button>
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 border-2 border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black font-bold px-4 py-3 rounded-lg transition-colors">
+                      <Heart size={20} />
+                    </button>
+                    <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 border-2 border-gray-500 text-gray-300 hover:border-yellow-500 hover:text-yellow-500 font-bold px-4 py-3 rounded-lg transition-colors">
+                      <Share2 size={20} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

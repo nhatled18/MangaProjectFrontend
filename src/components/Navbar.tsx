@@ -206,17 +206,25 @@ export function Navbar({ onSearch }: NavbarProps) {
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   className="lg:hidden text-gray-400 hover:text-yellow-500 p-2"
                 >
-                  <Menu size={20} />
+                  {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
                 </button>
               </>
             ) : (
               // Login button when not authenticated - positioned to the right
-              <button
-                onClick={() => setIsLoginFormOpen(!isLoginFormOpen)}
-                className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg hover:bg-yellow-400 transition-colors font-semibold text-sm"
-              >
-                Đăng nhập
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="lg:hidden text-gray-400 hover:text-yellow-500 p-2"
+                >
+                  {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+                <button
+                  onClick={() => setIsLoginFormOpen(!isLoginFormOpen)}
+                  className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg hover:bg-yellow-400 transition-colors font-semibold text-sm"
+                >
+                  Đăng nhập
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -330,56 +338,18 @@ export function Navbar({ onSearch }: NavbarProps) {
         )}
 
         {/* Mobile Menu */}
-        {isMenuOpen && isAuthenticated && (
-          <div className="md:hidden border-t border-gray-700 py-4 space-y-2">
-            <Link
-              to="/"
-              className="block text-yellow-500 px-4 py-2 hover:bg-gray-800 rounded"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Trang chủ
-            </Link>
-            <Link
-              to="/anime-list"
-              className="block text-gray-300 px-4 py-2 hover:bg-gray-800 rounded"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Danh sách Truyện
-            </Link>
-            <Link
-              to="/new-seasons"
-              className="block text-gray-300 px-4 py-2 hover:bg-gray-800 rounded"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Mùa mới
-            </Link>
-            <Link
-              to="/popular"
-              className="block text-gray-300 px-4 py-2 hover:bg-gray-800 rounded"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Phổ biến
-            </Link>
-
-            {user?.role === 'admin' && (
-              <Link
-                to="/admin"
-                className="block text-red-400 px-4 py-2 hover:bg-gray-800 rounded font-semibold"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Admin Dashboard
-              </Link>
-            )}
-
-            <div className="px-4 py-2">
+        {isMenuOpen && (
+          <div className="lg:hidden border-t border-gray-700 py-4 space-y-2 animate-slide-down">
+            {/* Search Bar Mobile */}
+            <div className="px-4 py-2 mb-2">
               <form onSubmit={handleSearch}>
                 <div className="relative">
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Tìm kiếm..."
-                    className="w-full bg-gray-800 text-white px-3 py-2 pr-10 rounded focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    placeholder="Tìm kiếm truyện..."
+                    className="w-full bg-gray-800 text-white px-4 py-2 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 border border-gray-700"
                   />
                   <button
                     type="submit"
@@ -391,32 +361,90 @@ export function Navbar({ onSearch }: NavbarProps) {
               </form>
             </div>
 
-            <div className="border-t border-gray-700 mt-4 pt-4 space-y-2">
-              <button
-                onClick={handleProfileClick}
-                className="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-800 rounded flex items-center gap-2"
-              >
-                <User size={16} />
-                Hồ sơ cá nhân
-              </button>
-              <button
-                onClick={() => {
-                  navigate('/settings');
-                  setIsMenuOpen(false);
-                }}
-                className="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-800 rounded flex items-center gap-2"
-              >
-                <Settings size={16} />
-                Cài đặt
-              </button>
-              <button
-                onClick={handleLogout}
-                className="w-full text-left px-4 py-2 text-red-400 hover:bg-gray-800 rounded flex items-center gap-2"
-              >
-                <LogOut size={16} />
-                Đăng xuất
-              </button>
-            </div>
+            <Link
+              to="/"
+              className="block text-gray-300 px-4 py-2 hover:bg-gray-800 rounded flex items-center gap-2"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Trang chủ
+            </Link>
+            <Link
+              to="/anime-list"
+              className="block text-gray-300 px-4 py-2 hover:bg-gray-800 rounded flex items-center gap-2"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Danh sách Truyện
+            </Link>
+            <Link
+              to="/new-seasons"
+              className="block text-gray-300 px-4 py-2 hover:bg-gray-800 rounded flex items-center gap-2"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Mùa mới
+            </Link>
+            <Link
+              to="/popular"
+              className="block text-gray-300 px-4 py-2 hover:bg-gray-800 rounded flex items-center gap-2"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Phổ biến
+            </Link>
+
+            {isAuthenticated && (
+              <>
+                <Link
+                  to="/token-shop"
+                  className="block text-blue-400 px-4 py-2 hover:bg-gray-800 rounded font-semibold flex items-center gap-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  ⭐ Mua Token
+                </Link>
+                <Link
+                  to="/leaderboard"
+                  className="block text-yellow-500 px-4 py-2 hover:bg-gray-800 rounded flex items-center gap-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  🏆 Bảng Xếp Hạng
+                </Link>
+
+                {user?.role === 'admin' && (
+                  <Link
+                    to="/admin"
+                    className="block text-red-400 px-4 py-2 hover:bg-gray-800 rounded font-semibold flex items-center gap-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    🛡️ Admin
+                  </Link>
+                )}
+
+                <div className="border-t border-gray-700 mt-2 pt-2 space-y-1">
+                  <button
+                    onClick={handleProfileClick}
+                    className="w-full text-left px-4 py-2 text-gray-400 hover:bg-gray-800 rounded flex items-center gap-2"
+                  >
+                    <User size={16} />
+                    Hồ sơ cá nhân
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate('/settings');
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-gray-400 hover:bg-gray-800 rounded flex items-center gap-2"
+                  >
+                    <Settings size={16} />
+                    Cài đặt
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 text-red-400 hover:bg-gray-800 rounded flex items-center gap-2"
+                  >
+                    <LogOut size={16} />
+                    Đăng xuất
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>

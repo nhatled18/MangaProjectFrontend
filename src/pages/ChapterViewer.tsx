@@ -227,7 +227,7 @@ export function ChapterViewer() {
         </div>
 
         {/* Navigation */}
-        <div className="flex gap-4 mb-8">
+        <div className="flex flex-wrap gap-2 md:gap-4 mb-6 md:mb-8">
           {prevChapter && (
             <button
               onClick={() =>
@@ -235,10 +235,10 @@ export function ChapterViewer() {
                   state: { chapters },
                 })
               }
-              className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded"
+              className="flex items-center gap-1 md:gap-2 bg-gray-800 hover:bg-gray-700 text-white px-3 md:px-4 py-2 rounded text-sm md:text-base transition-colors"
             >
-              <ChevronLeft size={20} />
-              Chapter {prevChapter.chapterNumber}
+              <ChevronLeft size={18} />
+              <span className="hidden xs:inline">Chương</span> {prevChapter.chapterNumber}
             </button>
           )}
           {nextChapter && (
@@ -248,50 +248,51 @@ export function ChapterViewer() {
                   state: { chapters },
                 })
               }
-              className="flex items-center gap-2 bg-gold-500 hover:bg-gold-600 text-black px-4 py-2 rounded font-bold ml-auto"
+              className="flex items-center gap-1 md:gap-2 bg-yellow-500 hover:bg-yellow-600 text-black px-3 md:px-4 py-2 rounded font-bold ml-auto text-sm md:text-base transition-colors"
             >
-              Chapter {nextChapter.chapterNumber}
-              <ChevronRight size={20} />
+              <span className="hidden xs:inline">Chương</span> {nextChapter.chapterNumber}
+              <ChevronRight size={18} />
             </button>
           )}
         </div>
 
         {/* Content */}
         {isLocked ? (
-          <div className="bg-gray-800 rounded-2xl p-12 flex flex-col items-center text-center border border-gray-700 shadow-2xl relative overflow-hidden">
+          <div className="bg-gray-800 rounded-2xl p-6 md:p-12 flex flex-col items-center text-center border border-gray-700 shadow-2xl relative overflow-hidden">
             {/* Background pattern */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500/0 via-yellow-500 to-yellow-500/0"></div>
             
-            <div className="w-24 h-24 bg-yellow-500/10 rounded-full flex items-center justify-center mb-6 border border-yellow-500/20">
-              <Lock size={48} className="text-yellow-500" />
+            <div className="w-16 md:w-24 h-16 md:h-24 bg-yellow-500/10 rounded-full flex items-center justify-center mb-6 border border-yellow-500/20">
+              <Lock size={32} className="text-yellow-500 md:hidden" />
+              <Lock size={48} className="text-yellow-500 hidden md:block" />
             </div>
             
-            <h2 className="text-3xl font-bold text-white mb-2">Chương này đang bị khóa</h2>
-            <p className="text-gray-400 mb-8 max-w-md">
+            <h2 className="text-xl md:text-3xl font-bold text-white mb-2">Chương này đang bị khóa</h2>
+            <p className="text-gray-400 mb-6 md:mb-8 max-w-md text-sm md:text-base">
               Chương {chapterData?.chapterNumber} hiện đang bị khóa. Bạn có thể mở khóa ngay bằng 20 Token hoặc đợi 7 ngày để đọc miễn phí.
             </p>
             
             {isLoggedIn ? (
-              <div className="w-full max-w-sm bg-gray-900/50 rounded-xl p-6 border border-gray-700 mb-8">
-                <div className="flex justify-between items-center mb-6">
-                  <div className="flex items-center gap-2 text-gray-300">
+              <div className="w-full max-w-sm bg-gray-900/50 rounded-xl p-4 md:p-6 border border-gray-700 mb-6 md:mb-8">
+                <div className="flex justify-between items-center mb-4 md:mb-6">
+                  <div className="flex items-center gap-2 text-gray-300 text-sm md:text-base">
                     <Coins size={18} className="text-yellow-500" />
                     <span>Số dư hiện tại:</span>
                   </div>
-                  <span className="text-xl font-bold text-white">{tokenBalance} Token</span>
+                  <span className="text-lg md:text-xl font-bold text-white">{tokenBalance} Token</span>
                 </div>
                 
                 <button
                   onClick={handleUnlock}
                   disabled={unlocking}
-                  className="w-full bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-600 text-black font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-3 text-lg shadow-lg shadow-yellow-500/20"
+                  className="w-full bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-600 text-black font-bold py-3 md:py-4 rounded-xl transition-all flex items-center justify-center gap-3 text-md md:text-lg shadow-lg shadow-yellow-500/20"
                 >
                   {unlocking ? (
                     <Loader className="animate-spin" size={20} />
                   ) : (
                     <>
                       <Lock size={20} />
-                      Mở khóa ngay (20 Token)
+                      Mở khóa (20 Token)
                     </>
                   )}
                 </button>
@@ -299,7 +300,7 @@ export function ChapterViewer() {
                 {tokenBalance < 20 && (
                   <button 
                     onClick={() => navigate('/token-shop')}
-                    className="w-full mt-4 flex items-center justify-center gap-2 text-yellow-500 hover:text-yellow-400 font-semibold"
+                    className="w-full mt-4 flex items-center justify-center gap-2 text-yellow-500 hover:text-yellow-400 font-semibold text-sm"
                   >
                     <CreditCard size={18} />
                     Nạp thêm Token
@@ -313,13 +314,13 @@ export function ChapterViewer() {
                   className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-3 text-lg"
                 >
                   <LogIn size={20} />
-                  Đăng nhập để xem
+                  Đăng nhập ngay
                 </button>
                 <p className="text-gray-500 text-sm">Bạn cần 20 token để mở khóa chương này</p>
               </div>
             )}
             
-            <p className="text-gray-500 text-sm mt-4">
+            <p className="text-gray-500 text-xs md:text-sm">
               * Sau khi mở khóa, bạn có thể đọc chương này vĩnh viễn
             </p>
           </div>
@@ -357,7 +358,7 @@ export function ChapterViewer() {
         )}
 
         {/* Bottom Navigation */}
-        <div className="flex gap-4 mt-8">
+        <div className="flex flex-wrap gap-2 md:gap-4 mt-6 md:mt-8">
           {prevChapter && (
             <button
               onClick={() =>
@@ -365,10 +366,10 @@ export function ChapterViewer() {
                   state: { chapters },
                 })
               }
-              className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded"
+              className="flex items-center gap-1 md:gap-2 bg-gray-800 hover:bg-gray-700 text-white px-3 md:px-4 py-2 rounded text-sm md:text-base"
             >
-              <ChevronLeft size={20} />
-              Chapter {prevChapter.chapterNumber}
+              <ChevronLeft size={18} />
+              <span className="hidden xs:inline">Chương</span> {prevChapter.chapterNumber}
             </button>
           )}
           {nextChapter && (
@@ -378,10 +379,10 @@ export function ChapterViewer() {
                   state: { chapters },
                 })
               }
-              className="flex items-center gap-2 bg-gold-500 hover:bg-gold-600 text-black px-4 py-2 rounded font-bold ml-auto"
+              className="flex items-center gap-1 md:gap-2 bg-yellow-500 hover:bg-yellow-600 text-black px-3 md:px-4 py-2 rounded font-bold ml-auto text-sm md:text-base transition-colors"
             >
-              Chapter {nextChapter.chapterNumber}
-              <ChevronRight size={20} />
+              <span className="hidden xs:inline">Chương</span> {nextChapter.chapterNumber}
+              <ChevronRight size={18} />
             </button>
           )}
         </div>
