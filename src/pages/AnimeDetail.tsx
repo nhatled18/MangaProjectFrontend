@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Anime } from '@/types';
-import { Play, Heart, Share2, Star, Loader, Lock } from 'lucide-react';
+import { Play, Star, Loader, Lock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { animeService } from '@/services/animeService';
 
