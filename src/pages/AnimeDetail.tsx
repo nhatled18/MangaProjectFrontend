@@ -22,7 +22,7 @@ export function AnimeDetail() {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('oldest');
+  // Removed sortOrder as requested - defaulting to ASC (Increasing)
 
   useEffect(() => {
     if (anime && anime.id) {
@@ -63,11 +63,15 @@ export function AnimeDetail() {
   // 1. VIP Section: All premium/locked chapters (always sorted DESC)
   const premiumChapters = chapters.filter(ch => !ch.isFree).sort((a, b) => b.chapterNumber - a.chapterNumber);
   
-  // 2. Free Section: All free chapters sortable by number
-  const freeChapters = chapters.filter(ch => ch.isFree).sort((a, b) => {
-    if (sortOrder === 'newest') return b.chapterNumber - a.chapterNumber;
-    return a.chapterNumber - b.chapterNumber;
-  });
+  // 2. Free Section: All free chapters always sorted by number ASC (Increasing)
+  const freeChapters = chapters.filter(ch => ch.isFree).sort((a, b) => a.chapterNumber - b.chapterNumber);
+
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
 
   const newestChapter = chapters.length > 0 
     ? [...chapters].sort((a, b) => b.chapterNumber - a.chapterNumber)[0] 
@@ -209,29 +213,30 @@ export function AnimeDetail() {
                       <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div> Chương Miễn phí
                     </div>
                     
-                    {/* Filter Buttons */}
-                    <div className="flex items-center gap-1 bg-gray-800 p-0.5 rounded-lg border border-gray-700">
+                    {/* Quick Navigation Buttons - Modern Pills */}
+                    <div className="flex items-center gap-2 relative z-50">
                       <button
-                        onClick={() => setSortOrder('newest')}
-                        className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${
-                          sortOrder === 'newest' ? 'bg-yellow-500 text-black shadow-lg' : 'text-gray-400 hover:text-white'
-                        }`}
+                        type="button"
+                        onClick={() => scrollToSection('free-chapter-0')}
+                        className="cursor-pointer active:scale-90 px-3 py-1.5 rounded-full text-[10px] font-black bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700 transition-all border border-gray-700 uppercase"
                       >
-                        MỚI NHẤT
+                        Đầu
                       </button>
                       <button
-                        onClick={() => setSortOrder('oldest')}
-                        className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${
-                          sortOrder === 'oldest' ? 'bg-yellow-500 text-black shadow-lg' : 'text-gray-400 hover:text-white'
-                        }`}
+                        type="button"
+                        onClick={() => scrollToSection(`free-chapter-${freeChapters.length - 1}`)}
+                        className="cursor-pointer active:scale-90 px-3 py-1.5 rounded-full text-[10px] font-black bg-yellow-500 text-black hover:bg-yellow-400 transition-all border border-yellow-600 shadow-lg shadow-yellow-500/20 uppercase"
                       >
-                        CŨ NHẤT
+                        Mới nhất
                       </button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 gap-2">
-                    {freeChapters.map(ch => (
-                      <ChapterItem key={ch.id} chapter={ch} onClick={handleChapterClick} formatDate={formatDate} />
+                  
+                  <div id="chapter-list-start" className="grid grid-cols-1 gap-2">
+                    {freeChapters.map((ch, index) => (
+                      <div key={ch.id} id={`free-chapter-${index}`}>
+                        <ChapterItem chapter={ch} onClick={handleChapterClick} formatDate={formatDate} />
+                      </div>
                     ))}
                   </div>
                 </div>
