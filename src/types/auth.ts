@@ -33,6 +33,9 @@ export interface UseAuthReturn {
   error: string | null;
   login: (username: string, password: string) => Promise<AuthResponse>;
   register: (username: string, email: string, password: string) => Promise<AuthResponse>;
+  forgotPassword: (email: string) => Promise<AuthResponse>;
+  verifyResetCode: (email: string, code: string) => Promise<AuthResponse>;
+  resetPassword: (email: string, code: string, newPassword: string) => Promise<AuthResponse>;
   logout: () => void;
   updateUser: (data: Partial<User>) => void;
   isAuthenticated: boolean;

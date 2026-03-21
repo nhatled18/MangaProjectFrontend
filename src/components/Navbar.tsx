@@ -2,6 +2,7 @@ import { useState} from 'react';
 import { Search, Bell, User, Menu, LogOut, Settings, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { AuthForm } from './AuthForm';
 
 interface NavbarProps {
   onSearch?: (query: string) => void;
@@ -12,12 +13,9 @@ export function Navbar({ onSearch }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isLoginFormOpen, setIsLoginFormOpen] = useState(false);
-  const [loginMode, setLoginMode] = useState<'login' | 'register'>('login');
-  const [loginData, setLoginData] = useState({ username: '', password: '', email: '' });
-  const [loginError, setLoginError] = useState('');
   
   const navigate = useNavigate();
-  const { user, logout, isAuthenticated, login, register, isLoading } = useAuth();
+  const { user, logout, isAuthenticated } = useAuth();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,36 +35,7 @@ export function Navbar({ onSearch }: NavbarProps) {
     setIsUserMenuOpen(false);
   };
 
-  const handleLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError('');
 
-    try {
-      if (loginMode === 'login') {
-        if (!loginData.username || !loginData.password) {
-          setLoginError('Vui lòng điền đầy đủ thông tin');
-          return;
-        }
-        await login(loginData.username, loginData.password);
-      } else {
-        if (!loginData.username || !loginData.email || !loginData.password) {
-          setLoginError('Vui lòng điền đầy đủ thông tin');
-          return;
-        }
-        await register(loginData.username, loginData.email, loginData.password);
-        setLoginMode('login');
-        setLoginData({ username: '', password: '', email: '' });
-        setLoginError('Đăng ký thành công! Vui lòng đăng nhập.');
-      }
-      // Reset form after successful login
-      if (loginMode === 'login') {
-        setLoginData({ username: '', password: '', email: '' });
-        setIsLoginFormOpen(false);
-      }
-    } catch (err) {
-      setLoginError(err instanceof Error ? err.message : 'Đăng nhập thất bại');
-    }
-  };
 
   return (
     <nav className="bg-gray-900 border-b border-gray-700 sticky top-0 z-50">
@@ -231,108 +200,17 @@ export function Navbar({ onSearch }: NavbarProps) {
 
         {/* Login Form Modal - Centered */}
         {isLoginFormOpen && !isAuthenticated && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[999]">
-            <div className="bg-gray-800 border border-gray-700 rounded-lg p-8 max-w-md w-full mx-4">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-white font-bold text-xl">
-                  {loginMode === 'login' ? 'Đăng Nhập' : 'Đăng Ký'}
-                </h3>
-                <button
-                  onClick={() => {
-                    setIsLoginFormOpen(false);
-                    setLoginError('');
-                  }}
-                  className="text-gray-400 hover:text-white"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-
-              <form onSubmit={handleLoginSubmit} className="space-y-4">
-                {loginError && (
-                  <div className="p-3 bg-red-500/20 border border-red-500 text-red-400 rounded text-sm">
-                    {loginError}
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-gray-300 text-sm mb-2">Username</label>
-                  <input
-                    type="text"
-                    value={loginData.username}
-                    onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
-                    placeholder="Nhập username"
-                    disabled={isLoading}
-                    className="w-full bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 disabled:opacity-50"
-                  />
-                </div>
-
-                {loginMode === 'register' && (
-                  <div>
-                    <label className="block text-gray-300 text-sm mb-2">Email</label>
-                    <input
-                      type="email"
-                      value={loginData.email}
-                      onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                      placeholder="Nhập email"
-                      disabled={isLoading}
-                      className="w-full bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 disabled:opacity-50"
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-gray-300 text-sm mb-2">Mật khẩu</label>
-                  <input
-                    type="password"
-                    value={loginData.password}
-                    onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                    placeholder="Nhập mật khẩu"
-                    disabled={isLoading}
-                    className="w-full bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 disabled:opacity-50"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-yellow-500 text-gray-900 py-2 rounded-lg hover:bg-yellow-400 transition-colors font-semibold disabled:opacity-50"
-                >
-                  {isLoading ? 'Đang xử lý...' : loginMode === 'login' ? 'Đăng Nhập' : 'Đăng Ký'}
-                </button>
-              </form>
-
-              <div className="mt-4 text-center text-sm text-gray-400">
-                {loginMode === 'login' ? (
-                  <>
-                    Chưa có tài khoản?{' '}
-                    <button
-                      onClick={() => {
-                        setLoginMode('register');
-                        setLoginError('');
-                      }}
-                      disabled={isLoading}
-                      className="text-yellow-500 hover:text-yellow-400 font-semibold disabled:opacity-50"
-                    >
-                      Đăng ký ngay
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    Đã có tài khoản?{' '}
-                    <button
-                      onClick={() => {
-                        setLoginMode('login');
-                        setLoginError('');
-                      }}
-                      disabled={isLoading}
-                      className="text-yellow-500 hover:text-yellow-400 font-semibold disabled:opacity-50"
-                    >
-                      Đăng nhập
-                    </button>
-                  </>
-                )}
-              </div>
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[999] p-4">
+            <div className="relative w-full max-w-md">
+              <button
+                onClick={() => setIsLoginFormOpen(false)}
+                className="absolute -top-12 right-0 text-white/70 hover:text-white transition-colors bg-white/10 p-2 rounded-full hover:bg-white/20"
+                title="Đóng"
+              >
+                <X size={24} />
+              </button>
+              
+              <AuthForm onSuccess={() => setIsLoginFormOpen(false)} isModal={true} />
             </div>
           </div>
         )}

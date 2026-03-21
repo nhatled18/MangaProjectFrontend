@@ -171,6 +171,69 @@ export const useAuth = (): UseAuthReturn => {
     []
   );
 
+  const forgotPassword = useCallback(async (email: string): Promise<AuthResponse> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_URL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data: AuthResponse = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to request reset code');
+      return data;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error';
+      setError(message);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const verifyResetCode = useCallback(async (email: string, code: string): Promise<AuthResponse> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_URL}/auth/verify-reset-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code }),
+      });
+      const data: AuthResponse = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Invalid reset code');
+      return data;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error';
+      setError(message);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const resetPassword = useCallback(async (email: string, code: string, newPassword: string): Promise<AuthResponse> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_URL}/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code, newPassword }),
+      });
+      const data: AuthResponse = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to reset password');
+      return data;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error';
+      setError(message);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const logout = useCallback(() => {
     authStore.clear();
   }, []);
@@ -184,6 +247,9 @@ export const useAuth = (): UseAuthReturn => {
     error,
     login,
     register,
+    forgotPassword,
+    verifyResetCode,
+    resetPassword,
     logout,
     updateUser: (data: Partial<User>) => authStore.updateUser(data),
     isAuthenticated,
