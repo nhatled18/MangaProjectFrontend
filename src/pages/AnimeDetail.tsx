@@ -22,7 +22,15 @@ export function AnimeDetail() {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Removed sortOrder as requested - defaulting to ASC (Increasing)
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 500);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     if (anime && anime.id) {
@@ -217,13 +225,6 @@ export function AnimeDetail() {
                     <div className="flex items-center gap-2 relative z-50">
                       <button
                         type="button"
-                        onClick={() => scrollToSection('free-chapter-0')}
-                        className="cursor-pointer active:scale-90 px-3 py-1.5 rounded-full text-[10px] font-black bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700 transition-all border border-gray-700 uppercase"
-                      >
-                        Đầu
-                      </button>
-                      <button
-                        type="button"
                         onClick={() => scrollToSection(`free-chapter-${freeChapters.length - 1}`)}
                         className="cursor-pointer active:scale-90 px-3 py-1.5 rounded-full text-[10px] font-black bg-yellow-500 text-black hover:bg-yellow-400 transition-all border border-yellow-600 shadow-lg shadow-yellow-500/20 uppercase"
                       >
@@ -245,6 +246,17 @@ export function AnimeDetail() {
           </div>
         </section>
       </main>
+
+      {/* Floating Back to Top Button */}
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        className={`fixed bottom-8 right-8 p-4 rounded-full bg-yellow-500 text-black shadow-2xl transition-all duration-300 z-50 hover:scale-110 active:scale-90 ${
+          showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
+        }`}
+        aria-label="Scroll to top"
+      >
+        <Play size={24} className="-rotate-90" fill="currentColor" />
+      </button>
     </div>
   );
 }
