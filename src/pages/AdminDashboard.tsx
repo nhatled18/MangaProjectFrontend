@@ -64,6 +64,16 @@ export function AdminDashboard() {
   const [animeId, setAnimeId] = useState<string>('');
   const [chapterResult, setChapterResult] = useState<ChapterUploadResult | null>(null);
 
+  // Chapter editing state
+  const [editingChapterId, setEditingChapterId] = useState<number | null>(null);
+  const [editingChapterForm, setEditingChapterForm] = useState({ chapter_number: '', chapter_title: '' });
+  const [editingChapterFiles, setEditingChapterFiles] = useState<File[]>([]);
+
+  // Page management state
+  const [managingPagesChapterId, setManagingPagesChapterId] = useState<number | null>(null);
+  const [chapterPages, setChapterPages] = useState<any[]>([]);
+  const [pagesLoading, setPagesLoading] = useState(false);
+
   // Image upload states
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -86,6 +96,19 @@ export function AdminDashboard() {
   // Get API URL from environment or use default
   const getApiUrl = () => {
     return import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  };
+
+  // Get Backend Base URL (remove /api from the end of getApiUrl)
+  const getBackendUrl = () => {
+    const apiUrl = getApiUrl();
+    return apiUrl.endsWith('/api') ? apiUrl.replace('/api', '') : apiUrl;
+  };
+
+  const getFullImageUrl = (path: string | null) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    const baseUrl = getBackendUrl();
+    return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
   };
 
   useEffect(() => {
@@ -398,9 +421,7 @@ export function AdminDashboard() {
         // Fix image URLs: prepend API base URL if they start with /uploads/
         const storiesWithFixedImages = data.data.animes?.map((story: any) => ({
           ...story,
-          image: story.image && story.image.startsWith('/uploads/')
-            ? `${window.location.origin}${story.image}`
-            : story.image
+          image: getFullImageUrl(story.image)
         })) || [];
 
         setMyStories(storiesWithFixedImages);
@@ -642,6 +663,113 @@ export function AdminDashboard() {
     }
   };
 
+  const startEditChapter = (chapter: any) => {
+    setEditingChapterId(chapter.id);
+    setEditingChapterForm({
+      chapter_number: chapter.chapter_number.toString(),
+      chapter_title: chapter.title || ''
+    });
+    setEditingChapterFiles([]);
+  };
+
+  const handleUpdateChapter = async (chapterId: number) => {
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('chapter_number', editingChapterForm.chapter_number);
+    formData.append('chapter_title', editingChapterForm.chapter_title);
+    editingChapterFiles.forEach(file => {
+      formData.append('files', file);
+    });
+
+    try {
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/admin/chapter/${chapterId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+      const data = await response.json();
+      if (data.success) {
+        alert('Cập nhật chapter thành công!');
+        setEditingChapterId(null);
+        setEditingChapterFiles([]);
+        if (managingStoryId) fetchChapters(managingStoryId);
+      } else {
+        alert(data.error || 'Lỗi cập nhật chapter');
+      }
+    } catch (err) {
+      alert('Lỗi cập nhật chapter');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const fetchChapterPages = async (chapterId: number) => {
+    try {
+      setPagesLoading(true);
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/admin/chapter/${chapterId}/pages`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setChapterPages(data.data);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setPagesLoading(false);
+    }
+  };
+
+  const handleDeletePage = async (pageId: number) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa trang này? Các trang sau sẽ tự động lùi số thứ tự.')) return;
+    try {
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/admin/page/${pageId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (data.success) {
+        if (managingPagesChapterId) fetchChapterPages(managingPagesChapterId);
+      } else {
+        alert(data.error || 'Lỗi xóa trang');
+      }
+    } catch (e) {
+      alert('Lỗi xóa trang');
+    }
+  };
+
+  const handleUpdatePageImage = async (pageId: number, file: File) => {
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/admin/page/${pageId}`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+      const data = await response.json();
+      if (data.success) {
+        alert('Cập nhật ảnh trang thành công!');
+        if (managingPagesChapterId) fetchChapterPages(managingPagesChapterId);
+      } else {
+        alert(data.error || 'Lỗi cập nhật trang');
+      }
+    } catch (err) {
+      alert('Lỗi cập nhật trang');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleChapterImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setChapterImages(Array.from(e.target.files));
@@ -741,7 +869,7 @@ export function AdminDashboard() {
               }`}
           >
             <CheckCircle size={18} />
-            Tất cả truyện
+            Quản lý truyện
           </button>
         </div>
 
@@ -1168,7 +1296,7 @@ export function AdminDashboard() {
         {activeTab === 'my-stories' && (
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">Quản lý Tất cả Truyện</h2>
+              <h2 className="text-2xl font-bold text-white">Quản lý truyện</h2>
               <button onClick={fetchMyStories} className="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded">Refresh</button>
             </div>
 
@@ -1268,20 +1396,155 @@ export function AdminDashboard() {
                               {chaptersLoading ? (
                                 <div className="text-gray-400">Đang tải chapters...</div>
                               ) : (
-                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                                  {storyChapters.map(ch => (
-                                    <div key={ch.id} className="bg-gray-700 p-3 rounded flex justify-between items-center border border-gray-600">
-                                      <div className="flex flex-col">
-                                        <span className="text-white font-semibold">Chapter {ch.chapterNumber}</span>
-                                        {ch.title && ch.title !== `Chapter ${ch.chapterNumber}` && (
-                                          <span className="text-gray-400 text-xs">{ch.title}</span>
+                                <>
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {storyChapters.map(ch => (
+                                      <div key={ch.id} className="bg-gray-700 p-4 rounded-lg border border-gray-600">
+                                        {editingChapterId === ch.id ? (
+                                          <div className="space-y-3">
+                                            <div className="grid grid-cols-2 gap-2">
+                                              <input
+                                                type="number"
+                                                step="0.1"
+                                                value={editingChapterForm.chapter_number}
+                                                onChange={(e) => setEditingChapterForm({...editingChapterForm, chapter_number: e.target.value})}
+                                                className="bg-gray-800 text-white px-3 py-1 rounded border border-gray-600 text-sm"
+                                                placeholder="Số Chapter"
+                                              />
+                                              <input
+                                                type="text"
+                                                value={editingChapterForm.chapter_title}
+                                                onChange={(e) => setEditingChapterForm({...editingChapterForm, chapter_title: e.target.value})}
+                                                className="bg-gray-800 text-white px-3 py-1 rounded border border-gray-600 text-sm"
+                                                placeholder="Tiêu đề"
+                                              />
+                                            </div>
+                                            <div>
+                                              <label className="block text-xs text-gray-400 mb-1">Thay thế toàn bộ ảnh (Tùy chọn)</label>
+                                              <input
+                                                type="file"
+                                                accept="image/*"
+                                                multiple
+                                                onChange={(e) => setEditingChapterFiles(e.target.files ? Array.from(e.target.files) : [])}
+                                                className="w-full bg-gray-800 text-gray-400 px-3 py-1 rounded border border-gray-600 text-xs"
+                                              />
+                                              {editingChapterFiles.length > 0 && (
+                                                <p className="text-xs text-green-400 mt-1">✓ {editingChapterFiles.length} ảnh mới được chọn</p>
+                                              ) }
+                                            </div>
+                                            <div className="flex gap-2 justify-end">
+                                              <button 
+                                                onClick={() => handleUpdateChapter(ch.id)} 
+                                                disabled={uploading}
+                                                className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded"
+                                              >
+                                                {uploading ? 'Đang lưu...' : 'Lưu'}
+                                              </button>
+                                              <button 
+                                                onClick={() => setEditingChapterId(null)} 
+                                                className="px-3 py-1 bg-gray-600 hover:bg-gray-500 text-white text-xs rounded"
+                                              >
+                                                Hủy
+                                              </button>
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <div className="flex justify-between items-center">
+                                            <div className="flex flex-col">
+                                              <span className="text-white font-semibold text-sm">Chapter {ch.chapter_number}</span>
+                                              <span className="text-gray-400 text-xs truncate max-w-[150px]">{ch.title || `Chapter ${ch.chapter_number}`}</span>
+                                            </div>
+                                            <div className="flex gap-2">
+                                              <button 
+                                                onClick={() => {
+                                                  setManagingPagesChapterId(ch.id);
+                                                  fetchChapterPages(ch.id);
+                                                }} 
+                                                className="text-green-400 hover:text-green-300 text-xs px-2 py-1 bg-green-900/30 rounded border border-green-500/30"
+                                              >
+                                                Xem trang
+                                              </button>
+                                              <button 
+                                                onClick={() => startEditChapter(ch)} 
+                                                className="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-blue-900/30 rounded border border-blue-500/30"
+                                              >
+                                                Sửa
+                                              </button>
+                                              <button 
+                                                onClick={() => handleDeleteChapter(ch.id)} 
+                                                className="text-red-400 hover:text-red-300 text-xs px-2 py-1 bg-red-900/30 rounded border border-red-500/30"
+                                              >
+                                                Xóa
+                                              </button>
+                                            </div>
+                                          </div>
                                         )}
                                       </div>
-                                      <button onClick={() => handleDeleteChapter(ch.id)} className="text-red-400 hover:text-red-300 font-bold px-2 py-1 bg-red-900/30 rounded border border-red-500/30">Xóa</button>
+                                    ))}
+                                    {storyChapters.length === 0 && <div className="col-span-full text-gray-400 py-4 text-center">Không có chapter nào.</div>}
+                                  </div>
+
+                                  {/* Page Manager Section */}
+                                  {managingPagesChapterId && (
+                                    <div className="mt-8 pt-8 border-t border-gray-700">
+                                      <div className="flex justify-between items-center mb-6">
+                                        <h3 className="text-xl font-bold text-yellow-500">Quản lý các trang của Chapter</h3>
+                                        <button 
+                                          onClick={() => setManagingPagesChapterId(null)} 
+                                          className="text-gray-400 hover:text-white underline"
+                                        >
+                                          Đóng quản lý trang
+                                        </button>
+                                      </div>
+
+                                      {pagesLoading ? (
+                                        <div className="text-center py-8 text-gray-500 italic">Đang tải danh sách trang...</div>
+                                      ) : (
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                                          {chapterPages.map((page) => (
+                                            <div key={page.id} className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700 flex flex-col group">
+                                              <div className="relative aspect-[2/3]">
+                                                <img 
+                                                  src={getFullImageUrl(page.imageUrl)} 
+                                                  alt={`Page ${page.pageNumber}`}
+                                                  className="w-full h-full object-cover"
+                                                />
+                                                <div className="absolute top-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
+                                                  Trang {page.pageNumber}
+                                                </div>
+                                              </div>
+                                              <div className="p-2 flex flex-col gap-1">
+                                                <label className="text-center py-1 bg-blue-600/20 text-blue-400 text-[10px] rounded border border-blue-500/30 cursor-pointer hover:bg-blue-600 hover:text-white transition-colors font-bold">
+                                                  Thay ảnh
+                                                  <input 
+                                                    type="file" 
+                                                    className="hidden" 
+                                                    accept="image/*"
+                                                    onChange={(e) => {
+                                                      const file = e.target.files?.[0];
+                                                      if (file) handleUpdatePageImage(page.id, file);
+                                                    }}
+                                                  />
+                                                </label>
+                                                <button 
+                                                  onClick={() => handleDeletePage(page.id)}
+                                                  className="py-1 bg-red-600/20 text-red-400 text-[10px] rounded border border-red-500/30 hover:bg-red-600 hover:text-white transition-colors font-bold"
+                                                >
+                                                  Xóa trang
+                                                </button>
+                                              </div>
+                                            </div>
+                                          ))}
+                                          {chapterPages.length === 0 && (
+                                            <div className="col-span-full py-8 text-center text-gray-500 border-2 border-dashed border-gray-800 rounded-lg">
+                                              Chương này chưa có trang nào.
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
                                     </div>
-                                  ))}
-                                  {storyChapters.length === 0 && <div className="col-span-4 text-gray-400">Không có chapter nào.</div>}
-                                </div>
+                                  )}
+                                </>
                               )}
                               <div className="mt-4 pt-4 border-t border-gray-700">
                                 <button onClick={() => { setAnimeId(s.id.toString()); setActiveTab('upload-anime'); setUploadChapterType('images'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded font-semibold flex items-center gap-2">
