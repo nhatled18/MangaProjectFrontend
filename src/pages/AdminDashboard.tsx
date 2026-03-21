@@ -1423,13 +1423,13 @@ export function AdminDashboard() {
                                               <label className="block text-xs text-gray-400 mb-1">Thay thế toàn bộ ảnh (Tùy chọn)</label>
                                               <input
                                                 type="file"
-                                                accept="image/*"
+                                                accept="image/*,.zip"
                                                 multiple
                                                 onChange={(e) => setEditingChapterFiles(e.target.files ? Array.from(e.target.files) : [])}
                                                 className="w-full bg-gray-800 text-gray-400 px-3 py-1 rounded border border-gray-600 text-xs"
                                               />
                                               {editingChapterFiles.length > 0 && (
-                                                <p className="text-xs text-green-400 mt-1">✓ {editingChapterFiles.length} ảnh mới được chọn</p>
+                                                <p className="text-xs text-green-400 mt-1">✓ {editingChapterFiles.length} file được chọn</p>
                                               ) }
                                             </div>
                                             <div className="flex gap-2 justify-end">
