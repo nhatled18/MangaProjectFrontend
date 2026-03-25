@@ -21,23 +21,6 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Types for API responses
-// interface PaginationResponse {
-//   items: any[];
-//   pagination?: {
-//     currentPage: number;
-//     totalItems: number;
-//     totalItemsPerPage: number;
-//   };
-//   params?: {
-//     pagination: {
-//       currentPage: number;
-//       totalItems: number;
-//       totalItemsPerPage: number;
-//     };
-//   };
-// }
-
 interface SearchResponse {
   items: Anime[];
   totalItems: number;
