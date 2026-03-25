@@ -261,17 +261,17 @@ export function ChapterViewer() {
           <div className="bg-gray-800 rounded-2xl p-6 md:p-12 flex flex-col items-center text-center border border-gray-700 shadow-2xl relative overflow-hidden">
             {/* Background pattern */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500/0 via-yellow-500 to-yellow-500/0"></div>
-            
+
             <div className="w-16 md:w-24 h-16 md:h-24 bg-yellow-500/10 rounded-full flex items-center justify-center mb-6 border border-yellow-500/20">
               <Lock size={32} className="text-yellow-500 md:hidden" />
               <Lock size={48} className="text-yellow-500 hidden md:block" />
             </div>
-            
+
             <h2 className="text-xl md:text-3xl font-bold text-white mb-2">Chương này đang bị khóa</h2>
             <p className="text-gray-400 mb-6 md:mb-8 max-w-md text-sm md:text-base">
               Chương {chapterData?.chapterNumber} hiện đang bị khóa. Bạn có thể mở khóa ngay bằng 20 Token hoặc đợi 7 ngày để đọc miễn phí.
             </p>
-            
+
             {isLoggedIn ? (
               <div className="w-full max-w-sm bg-gray-900/50 rounded-xl p-4 md:p-6 border border-gray-700 mb-6 md:mb-8">
                 <div className="flex justify-between items-center mb-4 md:mb-6">
@@ -281,7 +281,7 @@ export function ChapterViewer() {
                   </div>
                   <span className="text-lg md:text-xl font-bold text-white">{tokenBalance} Token</span>
                 </div>
-                
+
                 <button
                   onClick={handleUnlock}
                   disabled={unlocking}
@@ -296,9 +296,9 @@ export function ChapterViewer() {
                     </>
                   )}
                 </button>
-                
+
                 {tokenBalance < 20 && (
-                  <button 
+                  <button
                     onClick={() => navigate('/token-shop')}
                     className="w-full mt-4 flex items-center justify-center gap-2 text-yellow-500 hover:text-yellow-400 font-semibold text-sm"
                   >
@@ -319,7 +319,7 @@ export function ChapterViewer() {
                 <p className="text-gray-500 text-sm">Bạn cần 20 token để mở khóa chương này</p>
               </div>
             )}
-            
+
             <p className="text-gray-500 text-xs md:text-sm">
               * Sau khi mở khóa, bạn có thể đọc chương này vĩnh viễn
             </p>
@@ -333,7 +333,7 @@ export function ChapterViewer() {
                   <div key={`${chapterId}-${i}`} className="flex justify-center mb-4 relative group">
                     {/* Transparent Overlay to block dragging/right-clicking individual images */}
                     <div className="absolute inset-0 z-10 select-none pointer-events-auto" onContextMenu={(e) => e.preventDefault()}></div>
-                    
+
                     <img
                       src={image}
                       alt={`Page ${i + 1}`}

@@ -16,6 +16,7 @@ import { Settings } from '@/pages/Settings';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { TokenShopPage } from '@/pages/TokenShopPage';
 import { LeaderboardPage } from '@/pages/LeaderboardPage';
+import { AboutUs } from '@/pages/AboutUs';
 
 import './App.css';
 
@@ -74,6 +75,7 @@ function App() {
             <Route path="/popular" element={<Popular />} />
             <Route path="/search" element={<SearchResults />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} />
+            <Route path="/about" element={<AboutUs />} />
             {/* ✅ Token Shop & Profile - chỉ hiển thị khi đã login */}
             {auth.isAuthenticated && (
               <>

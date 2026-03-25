@@ -79,6 +79,9 @@ export function Navbar({ onSearch }: NavbarProps) {
             <Link to="/popular" className="text-gray-300 hover:text-white transition-colors">
               Phổ biến
             </Link>
+            <Link to="/about" className="text-gray-300 hover:text-white transition-colors">
+              Về chúng tôi
+            </Link>
             {/* Admin Dashboard Link */}
             {user?.role === 'admin' && (
               <Link to="/admin" className="text-red-400 hover:text-red-300 transition-colors font-semibold">
@@ -266,6 +269,13 @@ export function Navbar({ onSearch }: NavbarProps) {
               onClick={() => setIsMenuOpen(false)}
             >
               Phổ biến
+            </Link>
+            <Link
+              to="/about"
+              className="block text-gray-300 px-4 py-2 hover:bg-gray-800 rounded flex items-center gap-2"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Về chúng tôi
             </Link>
 
             {isAuthenticated && (

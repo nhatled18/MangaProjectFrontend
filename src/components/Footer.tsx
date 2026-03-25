@@ -30,9 +30,9 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-gold-500 transition-colors">
-                  Liên hệ
-                </a>
+                <Link to="/about" className="text-gray-400 hover:text-gold-500 transition-colors">
+                  Về chúng tôi
+                </Link>
               </li>
               <li>
                 <a href="#" className="text-gray-400 hover:text-gold-500 transition-colors">
