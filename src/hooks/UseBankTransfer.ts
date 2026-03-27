@@ -36,7 +36,11 @@ const buildQrUrl = (price: number, transferContent: string): string =>
     transferContent,
   )}&t=${Date.now()}`;
 
-// ─── Hook ────────────────────────────────────────────────────────────────────
+// // for testing
+//   const buildQrUrl = (price: number, transferContent: string): string =>
+//   `https://qr.sepay.vn/img?acc=09172194820&bank=TPBank&amount=${price}&des=${encodeURIComponent(
+//     transferContent,
+//   )}&t=${Date.now()}`;
 
 const POLL_INTERVAL_MS = 3_000;
 const POLL_TIMEOUT_MS = 10 * 60 * 1_000; // 10 minutes
