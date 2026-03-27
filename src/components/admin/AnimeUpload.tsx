@@ -290,9 +290,9 @@ export function AnimeUpload({ token }: AnimeUploadProps) {
                   onChange={handleFormChange}
                   className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700"
                 >
-                  <option value="TV">Manga</option>
-                  <option value="Movie">Manhwa</option>
-                  <option value="OVA">Comic</option>
+                  <option value="TV">TV</option>
+                  <option value="Movie">Movie</option>
+                  <option value="OVA">OVA</option>
                 </select>
               </div>
               <div>
