@@ -10,21 +10,30 @@ export const useAllStories = (page: number = 1) => {
   const [totalItems, setTotalItems] = useState(0);
 
   useEffect(() => {
+    const controller = new AbortController();
+    
     const fetchAllStories = async () => {
       setLoading(true);
       try {
         const response = await animeService.getAllAnimes({ page });
-        setStories(response.items || []);
-        setTotalPages(response.totalPages || 0);
-        setTotalItems(response.totalItems || 0);
-      } catch (err) {
-        setError('Failed to fetch stories');
+        if (!controller.signal.aborted) {
+          setStories(response.items || []);
+          setTotalPages(response.totalPages || 0);
+          setTotalItems(response.totalItems || 0);
+        }
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          setError('Failed to fetch stories');
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchAllStories();
+    return () => controller.abort();
   }, [page]);
 
   return { stories, loading, error, totalPages, totalItems };

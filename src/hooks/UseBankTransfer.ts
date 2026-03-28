@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import apiClient from '../services/api';
 
 export type ModalState = 'loading' | 'qr' | 'success' | 'error';
 
@@ -26,18 +25,13 @@ export interface UseBankTransferReturn {
   retryPayment: () => void;
 }
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-const getAuthToken = (): string =>
-  localStorage.getItem('token') || sessionStorage.getItem('token') || '';
-
 const buildQrUrl = (price: number, transferContent: string): string =>
   `https://qr.sepay.vn/img?acc=21483301&bank=ACB&amount=${price}&des=${encodeURIComponent(
     transferContent,
   )}&t=${Date.now()}`;
 
-// // for testing
-//   const buildQrUrl = (price: number, transferContent: string): string =>
+// for testting
+// const buildQrUrl = (price: number, transferContent: string): string =>
 //   `https://qr.sepay.vn/img?acc=09172194820&bank=TPBank&amount=${price}&des=${encodeURIComponent(
 //     transferContent,
 //   )}&t=${Date.now()}`;
@@ -60,8 +54,6 @@ export function useBankTransfer({
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── Cleanup helpers ──────────────────────────────────────────────────────
-
   const stopPolling = useCallback(() => {
     if (pollingRef.current) {
       clearInterval(pollingRef.current);
@@ -73,18 +65,13 @@ export function useBankTransfer({
     }
   }, []);
 
-  // ── Polling ──────────────────────────────────────────────────────────────
-
   const startPolling = useCallback(
     (shortCode: string) => {
       stopPolling();
-
       pollingRef.current = setInterval(async () => {
         try {
-          const res = await fetch(`${API_BASE}/api/shop/check-payment/${shortCode}`, {
-            headers: { Authorization: `Bearer ${getAuthToken()}` },
-          });
-          const json = await res.json();
+          const res = await apiClient.get(`/shop/check-payment/${shortCode}`);
+          const json = res.data;
 
           if (json.status === 'success' && json.data.paymentStatus === 'completed') {
             stopPolling();
@@ -93,17 +80,14 @@ export function useBankTransfer({
             onSuccess(json.data.tokenBalance);
           }
         } catch {
-          // Ignore transient network errors; keep polling
+          // Keep polling
         }
       }, POLL_INTERVAL_MS);
 
-      // Auto-expire after timeout
       timeoutRef.current = setTimeout(stopPolling, POLL_TIMEOUT_MS);
     },
     [stopPolling, onSuccess],
   );
-
-  // ── Create payment request ───────────────────────────────────────────────
 
   const createPayment = useCallback(async () => {
     if (!userId) return;
@@ -113,23 +97,14 @@ export function useBankTransfer({
     setPaymentData(null);
 
     try {
-      const res = await fetch(`${API_BASE}/api/shop/create-payment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getAuthToken()}`,
-        },
-        body: JSON.stringify({ amount, price }),
-      });
+      const res = await apiClient.post('/shop/create-payment', { amount, price });
+      const json = res.data;
 
-      const json = await res.json();
-
-      if (!res.ok || json.status !== 'success') {
+      if (json.status !== 'success') {
         throw new Error(json.message || 'Không tạo được payment request');
       }
 
       const { shortCode, transferContent } = json.data;
-
       setPaymentData({
         shortCode,
         transferContent,
@@ -137,14 +112,12 @@ export function useBankTransfer({
       });
 
       setModalState('qr');
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Lỗi không xác định';
+    } catch (err: any) {
+      const message = err.response?.data?.message || err.message || 'Lỗi không xác định';
       setErrorMessage(message);
       setModalState('error');
     }
   }, [userId, amount, price]);
-
-  // ── Effect: reset + init when modal opens/closes ─────────────────────────
 
   useEffect(() => {
     if (isOpen) {
@@ -153,13 +126,8 @@ export function useBankTransfer({
     } else {
       stopPolling();
     }
-
-    return () => {
-      stopPolling();
-    };
+    return () => stopPolling();
   }, [isOpen, createPayment, stopPolling]);
-
-  // ── Effect: start/stop polling based on state ────────────────────────────
 
   useEffect(() => {
     if (modalState === 'qr' && paymentData?.shortCode) {

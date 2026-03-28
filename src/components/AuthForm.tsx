@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuthForm, type FormMode } from '../hooks/UseAuthForm';
+import { useAuthForm, type FormMode } from '../hooks/useAuthForm';
 import '../styles/auth.css';
 
 const SHOW: Record<string, FormMode[]> = {
@@ -25,10 +25,10 @@ const TITLE: Record<FormMode, string> = {
 const SUBMIT_LABEL: Record<FormMode, string> = {
   'login':          'Đăng Nhập',
   'register':       'Đăng Ký',
-  'forgot-password':'Gửi mã xác nhận',
+  'forgot-password':'Gửi mã otp để reset mật khẩu',
   'verify-code':    'Xác nhận mã',
-  'reset-password': 'Đổi mật khẩu',
-};
+  'reset-password': 'Đặt lại mật khẩu',
+};  
 
 interface AuthFormProps {
   onSuccess?: () => void;

@@ -36,16 +36,12 @@ export function useTokenShop(onSuccess?: () => void): UseTokenShopReturn {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [activeTab, setActiveTab]               = useState<ShopTab>('shop');
 
-  // Balance lấy thẳng từ useAuth — không fetch riêng
   const tokenBalance = user?.token_balance ?? 0;
 
-  // useRef để tránh stale closure trong callback
   const updateUserRef = useRef(updateUser);
   useEffect(() => {
     updateUserRef.current = updateUser;
   }, [updateUser]);
-
-  // ─── Fetch packages (chỉ 1 lần lúc mount) ──────────────────────────────────
 
   const loadPackages = useCallback(async () => {
     setLoading(true);
@@ -60,11 +56,7 @@ export function useTokenShop(onSuccess?: () => void): UseTokenShopReturn {
     }
   }, []);
 
-  useEffect(() => {
-    loadPackages();
-  }, [loadPackages]);
-
-  // ─── Actions ────────────────────────────────────────────────────────────────
+  useEffect(() => { loadPackages(); }, [loadPackages]);
 
   const handleSelectPackage = useCallback((pkg: TokenPackage) => {
     setSelectedPackage(pkg);
@@ -85,7 +77,6 @@ export function useTokenShop(onSuccess?: () => void): UseTokenShopReturn {
     setPaymentModalOpen(false);
     setSuccess('Thanh toán thành công! Token đã được cộng vào tài khoản.');
     if (newBalance !== undefined) {
-      // Update authStore → tất cả component dùng useAuth tự re-render
       updateUserRef.current({ token_balance: newBalance });
     }
     onSuccess?.();

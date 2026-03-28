@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { User, AuthResponse, UseAuthReturn } from '../types/auth';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import apiClient from '../services/api';
 
 class AuthStore {
   private token: string | null = null;
@@ -36,13 +35,8 @@ class AuthStore {
     this.subscribers.forEach(cb => cb());
   }
 
-  getToken() {
-    return this.token;
-  }
-
-  getUser() {
-    return this.user;
-  }
+  getToken() { return this.token; }
+  getUser() { return this.user; }
 
   setAuth(token: string | null, user: User | null) {
     this.token = token;
@@ -63,20 +57,18 @@ class AuthStore {
     if (this.user) {
       this.user = { ...this.user, ...updatedUser };
       localStorage.setItem('user', JSON.stringify(this.user));
-      this.notify();
     } else {
-      // If user isn't in memory but is in localStorage, try updating localStorage anyway
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
         try {
           const user = JSON.parse(storedUser);
-          const newUser = { ...user, ...updatedUser };
-          localStorage.setItem('user', JSON.stringify(newUser));
+          localStorage.setItem('user', JSON.stringify({ ...user, ...updatedUser }));
         } catch (e) {
           console.error('Error updating stored user:', e);
         }
       }
     }
+    this.notify();
   }
 
   clear() {
@@ -95,165 +87,56 @@ export const useAuth = (): UseAuthReturn => {
   const [token, setToken] = useState<string | null>(authStore.getToken());
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isInitialized] = useState(true);
 
-  // ✅ Subscribe to store changes
   useEffect(() => {
-    const unsubscribe = authStore.subscribe(() => {
+    return authStore.subscribe(() => {
       setToken(authStore.getToken());
       setUser(authStore.getUser());
     });
-
-    return unsubscribe;
   }, []);
 
-  const login = useCallback(async (username: string, password: string): Promise<AuthResponse> => {
+  const handleAuthRequest = useCallback(async (
+    url: string, 
+    method: 'POST' | 'GET', 
+    body?: any
+  ): Promise<AuthResponse> => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+      const res = await apiClient({
+        url,
+        method,
+        data: body,
       });
 
-      const data: AuthResponse = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || data.error || 'Login failed');
+      const data: AuthResponse = res.data;
+      if (data.access_token && data.user) {
+        authStore.setAuth(data.access_token, data.user);
       }
-
-      const { access_token, user: userData } = data;
-      if (!access_token || !userData) {
-        throw new Error('Invalid response from server');
-      }
-
-      authStore.setAuth(access_token, userData);
-      
       return data;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Login failed';
+    } catch (err: any) {
+      const message = err.response?.data?.message || err.response?.data?.error || 'Authentication failed';
       setError(message);
       throw err;
     } finally {
       setIsLoading(false);
     }
   }, []);
-
-  const register = useCallback(
-    async (username: string, email: string, password: string): Promise<AuthResponse> => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(`${API_URL}/auth/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, email, password }),
-        });
-
-        const data: AuthResponse = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.message || data.error || 'Registration failed');
-        }
-
-        setError(null);
-        
-        return data;
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Registration failed';
-        setError(message);
-        throw err;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
-
-  const forgotPassword = useCallback(async (email: string): Promise<AuthResponse> => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`${API_URL}/auth/forgot-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      const data: AuthResponse = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to request reset code');
-      return data;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error';
-      setError(message);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const verifyResetCode = useCallback(async (email: string, code: string): Promise<AuthResponse> => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`${API_URL}/auth/verify-reset-code`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code }),
-      });
-      const data: AuthResponse = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Invalid reset code');
-      return data;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error';
-      setError(message);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const resetPassword = useCallback(async (email: string, code: string, newPassword: string): Promise<AuthResponse> => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`${API_URL}/auth/reset-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code, newPassword }),
-      });
-      const data: AuthResponse = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to reset password');
-      return data;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error';
-      setError(message);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const logout = useCallback(() => {
-    authStore.clear();
-  }, []);
-
-  const isAuthenticated = !!token && !!user;
 
   return {
     user,
     token,
     isLoading,
     error,
-    login,
-    register,
-    forgotPassword,
-    verifyResetCode,
-    resetPassword,
-    logout,
-    updateUser: (data: Partial<User>) => authStore.updateUser(data),
-    isAuthenticated,
-    isInitialized,
+    login: (username, password) => handleAuthRequest('/auth/login', 'POST', { username, password }),
+    register: (username, email, password) => handleAuthRequest('/auth/register', 'POST', { username, email, password }),
+    forgotPassword: (email) => handleAuthRequest('/auth/forgot-password', 'POST', { email }),
+    verifyResetCode: (email, code) => handleAuthRequest('/auth/verify-reset-code', 'POST', { email, code }),
+    resetPassword: (email, code, newPassword) => handleAuthRequest('/auth/reset-password', 'POST', { email, code, newPassword }),
+    logout: () => authStore.clear(),
+    updateUser: (data) => authStore.updateUser(data),
+    isAuthenticated: !!token && !!user,
+    isInitialized: true,
     isAdmin: user?.role === 'admin',
   };
 };

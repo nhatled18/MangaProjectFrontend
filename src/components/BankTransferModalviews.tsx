@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Copy, CheckCheck, ShieldCheck, Loader2, Wifi } from 'lucide-react';
-import type { PaymentData } from '@/hooks/UseBankTransfer';
+import type { PaymentData } from '@/hooks/useBankTransfer';
 
 
 

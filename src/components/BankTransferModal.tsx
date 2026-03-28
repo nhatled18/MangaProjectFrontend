@@ -1,7 +1,7 @@
 import React from 'react';
 import { QrCode, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useBankTransfer } from '@/hooks/UseBankTransfer';
+import { useBankTransfer } from '@/hooks/useBankTransfer';
 import { LoadingView, ErrorView, QRSection, SuccessView } from './BankTransferModalviews';
 
 // ─── Types ───────────────────────────────────────────────────────────────────

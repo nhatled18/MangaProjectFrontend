@@ -1,7 +1,7 @@
 import React from 'react';
 import { ShoppingBag, History as HistoryIcon } from 'lucide-react';
 import { TokenPackage } from '@/types';
-import { ShopTab } from '@/hooks/Usetokenshop';
+import { ShopTab } from '@/hooks/useTokenShop';
 
 // ─── TokenHeader ──────────────────────────────────────────────────────────────
 

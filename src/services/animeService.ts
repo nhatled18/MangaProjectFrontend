@@ -1,25 +1,6 @@
-import axios from 'axios';
+import apiClient from './api';
 import { Anime, Episode } from '@/types';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Add JWT token interceptor
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+import { getFullImageUrl } from '@/utils/image';
 
 interface SearchResponse {
   items: Anime[];
@@ -27,23 +8,18 @@ interface SearchResponse {
   totalPages: number;
 }
 
-// Convert snake_case from backend to camelCase for frontend
-const convertAnimeData = (data: any): Anime => {
-  let imageUrl = data.image || data.thumb_url || '';
-  
-  // ✅ If image starts with /uploads/, prepend the API base URL
-  if (imageUrl && imageUrl.startsWith('/uploads/')) {
-    // Remove /api from baseURL to get the server URL
-    const serverUrl = API_BASE_URL.replace('/api', '');
-    imageUrl = serverUrl + imageUrl;
-  }
-  
+interface GetAnimesOptions {
+  page?: number;
+  limit?: number;
+  keyword?: string;
+}
 
-  
+// ✅ Helper to convert raw backend data to Anime type
+const convertAnimeData = (data: any): Anime => {
   return {
     id: data._id || data.id || '',
     title: data.name || data.title || '',
-    image: imageUrl,  // ✅ Now has full URL
+    image: getFullImageUrl(data.image || data.thumb_url),
     description: data.content || data.description || '',
     episodeCount: data.episode_count || data.chaptersLatest?.length || 0,
     currentEpisode: data.current_episode || data.chaptersLatest?.[0]?.chapter_name || 'N/A',
@@ -56,36 +32,32 @@ const convertAnimeData = (data: any): Anime => {
   };
 };
 
-interface GetAnimesOptions {
-  page?: number;
-  limit?: number;
-}
+// ✅ Generic fetcher for paginated results
+const fetchPaginatedResults = async (url: string, params: any = {}): Promise<SearchResponse> => {
+  try {
+    const response = await apiClient.get(url, { params });
+    const data = response.data.data;
+    const items = (data.items || []).map(convertAnimeData);
+    const pagination = data.params?.pagination || {};
+
+    return {
+      items,
+      totalItems: pagination.totalItems || items.length,
+      totalPages: Math.ceil(
+        (pagination.totalItems || items.length) / 
+        (pagination.totalItemsPerPage || 24)
+      ),
+    };
+  } catch (error) {
+    console.error(`Error fetching from ${url}:`, error);
+    return { items: [], totalItems: 0, totalPages: 0 };
+  }
+};
 
 export const animeService = {
-  // Get all animes with pagination
-  getAllAnimes: async (options?: GetAnimesOptions): Promise<SearchResponse> => {
-    try {
-      const page = options?.page || 1;
-      const response = await apiClient.get('/danh-sach', {
-        params: { page },
-      });
+  getAllAnimes: (options?: GetAnimesOptions) => 
+    fetchPaginatedResults('/danh-sach', { page: options?.page || 1 }),
 
-      const data = response.data.data;
-      const items = (data.items || []).map(convertAnimeData);
-      const pagination = data.params?.pagination || {};
-
-      return {
-        items,
-        totalItems: pagination.totalItems || items.length,
-        totalPages: Math.ceil((pagination.totalItems || items.length) / (pagination.totalItemsPerPage || 24)),
-      };
-    } catch (error) {
-      console.error('Error fetching animes:', error);
-      return { items: [], totalItems: 0, totalPages: 0 };
-    }
-  },
-
-  // Get anime by ID
   getAnimeById: async (id: string): Promise<Anime | null> => {
     try {
       const response = await apiClient.get(`/truyen-tranh/${id}`);
@@ -97,101 +69,33 @@ export const animeService = {
     }
   },
 
-  // Search animes with pagination
-  searchAnimes: async (query: string, page: number = 1): Promise<SearchResponse> => {
-    try {
-      if (!query.trim()) {
-        return { items: [], totalItems: 0, totalPages: 0 };
-      }
-
-      const response = await apiClient.get('/danh-sach', {
-        params: { keyword: query, page },
-      });
-
-      const data = response.data.data;
-      const items = (data.items || []).map(convertAnimeData);
-      const pagination = data.params?.pagination || {};
-
-      return {
-        items,
-        totalItems: pagination.totalItems || items.length,
-        totalPages: Math.ceil((pagination.totalItems || items.length) / (pagination.totalItemsPerPage || 24)),
-      };
-    } catch (error) {
-      console.error('Error searching animes:', error);
-      return { items: [], totalItems: 0, totalPages: 0 };
-    }
+  searchAnimes: (query: string, page: number = 1) => {
+    if (!query.trim()) return Promise.resolve({ items: [], totalItems: 0, totalPages: 0 });
+    return fetchPaginatedResults('/danh-sach', { keyword: query, page });
   },
 
-  // Get trending animes with pagination (return SearchResponse format)
-  getTrendingAnimes: async (page: number = 1): Promise<SearchResponse> => {
-    try {
-      const response = await apiClient.get('/danh-sach', {
-        params: { page },
-      });
-      const data = response.data.data;
-      const items = (data.items || []).map(convertAnimeData);
-      const pagination = data.params?.pagination || {};
+  getTrendingAnimes: (page: number = 1) => 
+    fetchPaginatedResults('/danh-sach', { page }),
 
-      return {
-        items,
-        totalItems: pagination.totalItems || items.length,
-        totalPages: Math.ceil((pagination.totalItems || items.length) / (pagination.totalItemsPerPage || 24)),
-      };
-    } catch (error) {
-      console.error('Error fetching trending:', error);
-      return { items: [], totalItems: 0, totalPages: 0 };
-    }
-  },
+  getNewReleases: (page: number = 1) => 
+    fetchPaginatedResults('/danh-sach/truyen-moi', { page }),
 
-  // Get new releases with pagination
-  getNewReleases: async (page: number = 1): Promise<SearchResponse> => {
-    try {
-      const response = await apiClient.get('/danh-sach/truyen-moi', {
-        params: { page },
-      });
-
-      const data = response.data.data;
-      const items = (data.items || []).map(convertAnimeData);
-      const pagination = data.params?.pagination || {};
-
-      return {
-        items,
-        totalItems: pagination.totalItems || items.length,
-        totalPages: Math.ceil((pagination.totalItems || items.length) / (pagination.totalItemsPerPage || 24)),
-      };
-    } catch (error) {
-      console.error('Error fetching new releases:', error);
-      return { items: [], totalItems: 0, totalPages: 0 };
-    }
-  },
-
-  // Get episodes for an anime
   getEpisodes: async (animeId: string, page: number = 1): Promise<Episode[]> => {
     try {
       const response = await apiClient.get(`/comic/${animeId}/chapters`, {
         params: { page },
       });
-      const data = response.data.data;
-      return Array.isArray(data?.items) ? data.items : [];
+      return Array.isArray(response.data.data?.items) ? response.data.data.items : [];
     } catch (error) {
       console.error('Error fetching episodes:', error);
       return [];
     }
   },
 
-  // Get chapter content
   getChapterContent: async (chapterId: string) => {
-    try {
-      const response = await apiClient.get('/chapter', {
-        params: { id: chapterId }
-      });
-      return response.data || null;
-    } catch (error) {
-      console.error('Error fetching chapter content:', error);
-      throw error;
-    }
+    const response = await apiClient.get('/chapter', { params: { id: chapterId } });
+    return response.data || null;
   },
 };
 
-export default apiClient;
+export default animeService;

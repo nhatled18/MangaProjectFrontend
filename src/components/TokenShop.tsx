@@ -1,14 +1,14 @@
 import React from 'react';
 import BankTransferModal from './BankTransferModal';
 import TransactionHistory from './TransactionHistory';
-import { useTokenShop } from '@/hooks/Usetokenshop';
+import { useTokenShop } from '@/hooks/useTokenShop';
 import {
   TokenHeader,
   TokenTabs,
   TokenPackagesGrid,
   TokenInfo,
   StatusMessages,
-} from './tokensop.components';
+} from './tokenShop.components';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
