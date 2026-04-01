@@ -3,5 +3,5 @@ export const NAV_LINKS = [
   { label: 'Danh sách Truyện', href: '/anime-list' },
   { label: 'Mùa mới', href: '/new-seasons' },
   { label: 'Phổ biến', href: '/popular' },
-  { label: 'Về chúng tôi', href: '/about' },
+  // { label: 'Về chúng tôi', href: '/about' },
 ];

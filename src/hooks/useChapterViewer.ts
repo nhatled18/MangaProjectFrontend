@@ -41,7 +41,7 @@ export function useChapterViewer() {
     }
   }, [location.state]);
 
-  // Fetch chapter + token balance on chapterId change
+  // Fetch chapter + token balance on chapterId or auth status change
   useEffect(() => {
     fetchChapterData();
     if (isAuthenticated) fetchTokenBalance();
@@ -50,7 +50,7 @@ export function useChapterViewer() {
     const preventCopy = (e: MouseEvent) => e.preventDefault();
     document.addEventListener('contextmenu', preventCopy);
     return () => document.removeEventListener('contextmenu', preventCopy);
-  }, [chapterId]);
+  }, [chapterId, isAuthenticated]);
 
   const fetchTokenBalance = async () => {
     try {

@@ -29,11 +29,11 @@ export function Footer() {
                   Danh sách Truyện
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link to="/about" className="text-gray-400 hover:text-gold-500 transition-colors">
                   Về chúng tôi
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <a href="#" className="text-gray-400 hover:text-gold-500 transition-colors">
                   Điều khoản

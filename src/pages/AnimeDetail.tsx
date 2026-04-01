@@ -3,6 +3,7 @@ import { Anime } from '@/types';
 import { Play, Star, Loader, Lock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { animeService } from '@/services/animeService';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Chapter {
   id: string;
@@ -32,11 +33,13 @@ export function AnimeDetail() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const { isAuthenticated } = useAuth();
+
   useEffect(() => {
     if (anime && anime.id) {
       fetchChapters();
     }
-  }, [anime]);
+  }, [anime, isAuthenticated]);
 
   const fetchChapters = async () => {
     try {
