@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { getFullImageUrl } from '../../utils/image';
 import { adminService } from '../../services/adminService';
+import { Pagination } from '../Pagination';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface Story {
@@ -34,6 +35,8 @@ export function AnimeManagement({ token, onNavigateToUpload }: AnimeManagementPr
   const [myStories, setMyStories] = useState<Story[]>([]);
   const [myStoriesLoading, setMyStoriesLoading] = useState(false);
   const [myStoriesError, setMyStoriesError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   // Inline editing state
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -62,9 +65,9 @@ export function AnimeManagement({ token, onNavigateToUpload }: AnimeManagementPr
 
   useEffect(() => {
     if (token) {
-      fetchMyStories();
+      fetchMyStories(currentPage);
     }
-  }, [token]);
+  }, [token, currentPage]);
 
   const uploadImageFile = async (file: File): Promise<string | null> => {
     if (!token) return null;
@@ -82,18 +85,20 @@ export function AnimeManagement({ token, onNavigateToUpload }: AnimeManagementPr
     }
   };
 
-  const fetchMyStories = async () => {
+  const fetchMyStories = async (page: number = 1) => {
     if (!token) return;
     try {
       setMyStoriesLoading(true);
       setMyStoriesError(null);
-      const data = await adminService.getMyAnimes(token);
+      const data = await adminService.getMyAnimes(token, page);
       if (data.success) {
         const storiesWithFixedImages: Story[] = (data.data.animes ?? []).map((story: Story) => ({
           ...story,
           image: getFullImageUrl(story.image),
         }));
         setMyStories(storiesWithFixedImages);
+        setTotalPages(data.data.pages ?? 1);
+        setCurrentPage(data.data.current_page ?? 1);
       } else {
         setMyStoriesError(data.error || 'Failed to load stories');
       }
@@ -164,7 +169,7 @@ export function AnimeManagement({ token, onNavigateToUpload }: AnimeManagementPr
 
       const data = await adminService.updateAnime(token, editingId, submitData);
       if (data.success) {
-        await fetchMyStories();
+        await fetchMyStories(currentPage);
         cancelEdit();
       } else {
         setEditingError(data.error || 'Failed to update truyện');
@@ -319,7 +324,7 @@ export function AnimeManagement({ token, onNavigateToUpload }: AnimeManagementPr
     <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-white">Quản lý truyện</h2>
-        <button onClick={fetchMyStories} className="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded">Refresh</button>
+        <button onClick={() => fetchMyStories(currentPage)} className="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded">Refresh</button>
       </div>
 
       {myStoriesLoading ? (
@@ -580,6 +585,17 @@ export function AnimeManagement({ token, onNavigateToUpload }: AnimeManagementPr
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && !managingStoryId && (
+        <div className="mt-8 border-t border-gray-800 pt-6">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => setCurrentPage(page)}
+          />
         </div>
       )}
     </div>

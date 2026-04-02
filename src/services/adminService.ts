@@ -25,8 +25,8 @@ const getHeaders = (token: string, isFormData = false) => {
 
 export const adminService = {
   // --- User Management ---
-  getUsers: (token: string) => {
-    return fetch(`${getApiUrl()}/auth/admin/users`, {
+  getUsers: (token: string, page: number = 1, limit: number = 10) => {
+    return fetch(`${getApiUrl()}/auth/admin/users?page=${page}&limit=${limit}`, {
       method: 'GET',
       headers: getHeaders(token)
     }).then(handleResponse);
@@ -68,8 +68,8 @@ export const adminService = {
     }).then(handleResponse);
   },
 
-  getMyAnimes: (token: string) => {
-    return fetch(`${getApiUrl()}/admin/animes/mine`, {
+  getMyAnimes: (token: string, page: number = 1, limit: number = 20) => {
+    return fetch(`${getApiUrl()}/admin/animes/mine?page=${page}&limit=${limit}`, {
       method: 'GET',
       headers: getHeaders(token)
     }).then(handleResponse);

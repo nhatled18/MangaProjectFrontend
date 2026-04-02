@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { User } from '../../types/auth';
-import { UserCheck, UserX } from 'lucide-react';
+import { UserCheck, UserX, Coins, Users } from 'lucide-react';
 import { adminService } from '../../services/adminService';
+import { Pagination } from '../Pagination';
 
 interface UserManagementProps {
   token: string | null;
@@ -11,19 +12,23 @@ export function UserManagement({ token }: UserManagementProps) {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    if (token) fetchUsers();
-  }, [token]);
+    if (token) fetchUsers(currentPage);
+  }, [token, currentPage]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (page: number = 1) => {
     if (!token) return;
     try {
       setLoading(true);
       setError(null);
-      const data = await adminService.getUsers(token);
+      const data = await adminService.getUsers(token, page);
       if (data.success) {
         setUsers(data.data.users);
+        setTotalPages(data.data.pages);
+        setCurrentPage(data.data.current_page);
       } else {
         setError(data.error || 'Failed to load users');
       }
@@ -72,12 +77,28 @@ export function UserManagement({ token }: UserManagementProps) {
           {error}
         </div>
       )}
+
+      {/* Summary Info */}
+      <div className="p-4 bg-gray-800/30 border-b border-gray-800 flex items-center gap-6">
+        <div className="flex items-center gap-2">
+          <Users size={18} className="text-blue-400" />
+          <span className="text-gray-300 text-sm">Tổng cộng: <span className="text-white font-bold">{users.length}</span> users (trang này)</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Coins size={18} className="text-yellow-500" />
+          <span className="text-gray-300 text-sm">Tổng token: <span className="text-yellow-500 font-bold">
+            {users.reduce((acc, u) => acc + (u.token_balance || 0), 0).toLocaleString()}
+          </span> (trang này)</span>
+        </div>
+      </div>
+
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-800 bg-gray-800/50">
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Username</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Email</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Tokens</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Role</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Status</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Actions</th>
@@ -90,6 +111,12 @@ export function UserManagement({ token }: UserManagementProps) {
                   <span className="text-white font-semibold">{user.username}</span>
                 </td>
                 <td className="px-6 py-4 text-gray-400">{user.email}</td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-1.5 text-yellow-500 font-bold">
+                    <Coins size={14} />
+                    <span>{user.token_balance?.toLocaleString() || 0}</span>
+                  </div>
+                </td>
                 <td className="px-6 py-4">
                   <select
                     value={user.role}
@@ -125,6 +152,17 @@ export function UserManagement({ token }: UserManagementProps) {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="p-4 border-t border-gray-800">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => setCurrentPage(page)}
+          />
+        </div>
+      )}
     </div>
   );
 }
