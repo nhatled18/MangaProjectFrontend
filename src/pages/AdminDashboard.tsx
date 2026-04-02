@@ -35,15 +35,15 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 py-8 px-4">
+    <div className="min-h-screen bg-gray-950 py-4 md:py-8 px-2 md:px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <Shield className="text-yellow-500" size={32} />
-            <h1 className="text-4xl font-bold text-white">Admin Dashboard</h1>
+        <div className="mb-6 md:mb-8">
+          <div className="flex items-center gap-2 md:gap-3 mb-2">
+            <Shield className="text-yellow-500" size={28} />
+            <h1 className="text-2xl md:text-4xl font-bold text-white">Admin Dashboard</h1>
           </div>
-          <p className="text-gray-400">Quản lý người dùng và upload truyện & chương</p>
+          <p className="text-gray-400 text-sm md:text-base">Quản lý người dùng và upload truyện & chương</p>
         </div>
 
         {/* Tabs */}

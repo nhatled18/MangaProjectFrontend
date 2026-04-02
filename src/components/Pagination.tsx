@@ -47,27 +47,27 @@ export const Pagination: React.FC<PaginationProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-center gap-2 my-8">
+    <div className="flex items-center justify-center gap-1 md:gap-2 my-4 md:my-8">
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white transition"
+        className="p-1 md:p-2 rounded-lg bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white transition"
       >
-        <ChevronLeft size={20} />
+        <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
       </button>
 
-      <div className="flex gap-2">
+      <div className="flex gap-1 md:gap-2">
         {getPageNumbers().map((page, idx) => (
           <button
             key={idx}
             onClick={() => typeof page === 'number' && onPageChange(page)}
             disabled={page === '...'}
             className={`
-              w-10 h-10 rounded-lg font-semibold transition
+              w-8 h-8 md:w-10 md:h-10 rounded-lg font-semibold transition text-xs md:text-base
               ${page === '...'
                 ? 'cursor-default'
                 : currentPage === page
-                ? 'bg-gold-500 text-gray-900'
+                ? 'bg-yellow-500 text-gray-900 shadow-lg shadow-yellow-500/20'
                 : 'bg-gray-800 hover:bg-gray-700 text-white'
               }
             `}
@@ -80,9 +80,9 @@ export const Pagination: React.FC<PaginationProps> = ({
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white transition"
+        className="p-1 md:p-2 rounded-lg bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white transition"
       >
-        <ChevronRight size={20} />
+        <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
       </button>
     </div>
   );

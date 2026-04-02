@@ -222,7 +222,7 @@ export function AnimeUpload({ token }: AnimeUploadProps) {
   };
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-lg p-8">
+    <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 md:p-8">
       {uploadMessage && (
         <div className={`mb-6 p-4 rounded-lg ${uploadMessage.type === 'success'
             ? 'bg-green-900/20 border border-green-500 text-green-400'
@@ -234,7 +234,7 @@ export function AnimeUpload({ token }: AnimeUploadProps) {
 
       <div className="space-y-8">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-6">Upload Truyện</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-6">Upload Truyện</h2>
           <form onSubmit={handleUploadAnime} className="space-y-6">
             <div>
               <label className="block text-gray-300 text-sm font-semibold mb-2">Title *</label>
@@ -244,7 +244,7 @@ export function AnimeUpload({ token }: AnimeUploadProps) {
                 value={form.title}
                 onChange={handleFormChange}
                 required
-                className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 border border-gray-700"
+                className="w-full bg-gray-800 text-white px-3 md:px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 border border-gray-700 text-sm"
                 placeholder="Tiêu đề truyện"
               />
             </div>
@@ -257,7 +257,7 @@ export function AnimeUpload({ token }: AnimeUploadProps) {
                 onChange={handleFormChange}
                 required
                 rows={4}
-                className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 border border-gray-700"
+                className="w-full bg-gray-800 text-white px-3 md:px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 border border-gray-700 text-sm"
                 placeholder="Mô tả truyện"
               />
             </div>
@@ -281,14 +281,14 @@ export function AnimeUpload({ token }: AnimeUploadProps) {
               )}
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-gray-300 text-sm font-semibold mb-2">Type</label>
                 <select
                   name="type"
                   value={form.type}
                   onChange={handleFormChange}
-                  className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700"
+                  className="w-full bg-gray-800 text-white px-3 md:px-4 py-2 rounded-lg border border-gray-700 text-sm"
                 >
                   <option value="TV">TV</option>
                   <option value="Movie">Movie</option>
@@ -301,20 +301,20 @@ export function AnimeUpload({ token }: AnimeUploadProps) {
                   name="status"
                   value={form.status}
                   onChange={handleFormChange}
-                  className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700"
+                  className="w-full bg-gray-800 text-white px-3 md:px-4 py-2 rounded-lg border border-gray-700 text-sm"
                 >
                   <option value="Ongoing">Đang tiến hành</option>
                   <option value="Completed">Hoàn thành</option>
                 </select>
               </div>
               <div>
-                <label className="block text-gray-300 text-sm font-semibold mb-2">Category (Comma separated)</label>
+                <label className="block text-gray-300 text-sm font-semibold mb-2 text-xs md:text-sm">Category (Comma separated)</label>
                 <input
                   type="text"
                   name="category"
                   value={form.category}
                   onChange={handleFormChange}
-                  className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700"
+                  className="w-full bg-gray-800 text-white px-3 md:px-4 py-2 rounded-lg border border-gray-700 text-sm"
                   placeholder="Action, Romance..."
                 />
               </div>
@@ -354,18 +354,18 @@ export function AnimeUpload({ token }: AnimeUploadProps) {
           <div className="space-y-6">
             <div>
               <label className="block text-gray-300 text-sm font-semibold mb-2">Truyện ID *</label>
-              <div className="flex gap-4 items-center">
+              <div className="flex flex-col md:flex-row gap-3 md:gap-4 md:items-center">
                 <input
                   type="number"
                   value={animeId}
                   onChange={(e) => setAnimeId(e.target.value)}
                   placeholder="Nhập ID Truyện"
-                  className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 border border-gray-700"
+                  className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 border border-gray-700 text-sm"
                 />
                 {lastCreatedAnimeId && (
                   <button
                     onClick={() => setAnimeId(lastCreatedAnimeId.toString())}
-                    className="whitespace-nowrap bg-gray-800 text-yellow-500 px-4 py-2 rounded-lg border border-gray-700 hover:border-yellow-500 transition-colors text-sm"
+                    className="whitespace-nowrap bg-gray-800 text-yellow-500 px-4 py-2 rounded-lg border border-gray-700 hover:border-yellow-500 transition-colors text-xs"
                   >
                     Use Last ID ({lastCreatedAnimeId})
                   </button>
@@ -427,7 +427,7 @@ export function AnimeUpload({ token }: AnimeUploadProps) {
 
             {uploadChapterType === 'images' && (
               <div className="space-y-4">
-                 <div className="grid grid-cols-2 gap-4">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-gray-300 text-sm font-semibold mb-2">Số Chapter *</label>
                       <input
@@ -435,7 +435,7 @@ export function AnimeUpload({ token }: AnimeUploadProps) {
                         value={chapterNumberUpload}
                         onChange={(e) => setChapterNumberUpload(e.target.value)}
                         placeholder="VD: 1, 1.5, 2..."
-                        className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 border border-gray-700"
+                        className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 border border-gray-700 text-sm"
                       />
                     </div>
                     <div>
@@ -445,7 +445,7 @@ export function AnimeUpload({ token }: AnimeUploadProps) {
                         value={chapterTitleUpload}
                         onChange={(e) => setChapterTitleUpload(e.target.value)}
                         placeholder="Tên chương"
-                        className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700"
+                        className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 text-sm"
                       />
                     </div>
                  </div>

@@ -321,10 +321,10 @@ export function AnimeManagement({ token, onNavigateToUpload }: AnimeManagementPr
   };
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+    <div className="bg-gray-900 border border-gray-800 rounded-lg p-3 md:p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-white">Quản lý truyện</h2>
-        <button onClick={() => fetchMyStories(currentPage)} className="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded">Refresh</button>
+        <h2 className="text-xl md:text-2xl font-bold text-white">Quản lý truyện</h2>
+        <button onClick={() => fetchMyStories(currentPage)} className="px-2 md:px-3 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded text-sm">Refresh</button>
       </div>
 
       {myStoriesLoading ? (
@@ -338,26 +338,26 @@ export function AnimeManagement({ token, onNavigateToUpload }: AnimeManagementPr
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-800 bg-gray-800/50">
-                <th className="px-4 py-2 text-left text-sm font-semibold text-gray-300">ID</th>
-                <th className="px-4 py-2 text-left text-sm font-semibold text-gray-300">Tiêu đề</th>
-                <th className="px-4 py-2 text-left text-sm font-semibold text-gray-300">Trạng thái</th>
-                <th className="px-4 py-2 text-left text-sm font-semibold text-gray-300">Hành động</th>
+                <th className="px-4 py-2 text-left text-sm font-semibold text-gray-300 w-16">ID</th>
+                <th className="px-4 py-2 text-left text-sm font-semibold text-gray-300 min-w-[200px]">Tiêu đề</th>
+                <th className="px-4 py-2 text-left text-sm font-semibold text-gray-300 min-w-[120px]">Trạng thái</th>
+                <th className="px-4 py-2 text-left text-sm font-semibold text-gray-300 min-w-[250px]">Hành động</th>
               </tr>
             </thead>
             <tbody>
               {myStories.map((s) => (
                 <React.Fragment key={s.id}>
                   <tr className="border-b border-gray-800 hover:bg-gray-800/30">
-                    <td className="px-4 py-3 text-gray-300">{s.id}</td>
+                    <td className="px-4 py-3 text-gray-300 text-sm">{s.id}</td>
                     <td className="px-4 py-3">
-                      <div className="text-white font-semibold">{s.title}</div>
-                      <div className="text-gray-400 text-sm">{s.slug}</div>
+                      <div className="text-white font-semibold text-sm line-clamp-1">{s.title}</div>
+                      <div className="text-gray-400 text-xs truncate max-w-[150px]">{s.slug}</div>
                     </td>
-                    <td className="px-4 py-3 text-gray-300">{s.status}</td>
-                    <td className="px-4 py-3 flex gap-2">
-                      <button onClick={() => startEdit(s)} className="px-3 py-1 bg-yellow-600 text-black rounded">Chỉnh sửa</button>
-                      <button onClick={() => openChapterManager(s.id)} className="px-3 py-1 bg-green-600 text-white rounded">Quản lý Chương</button>
-                      <button onClick={() => deleteStory(s.id)} className="px-3 py-1 bg-red-700 text-white rounded">Delete</button>
+                    <td className="px-4 py-3 text-gray-300 text-sm">{s.status}</td>
+                    <td className="px-4 py-3 flex gap-2 flex-wrap">
+                      <button onClick={() => startEdit(s)} className="px-2 md:px-3 py-1 bg-yellow-600 text-black rounded text-xs">Sửa</button>
+                      <button onClick={() => openChapterManager(s.id)} className="px-2 md:px-3 py-1 bg-green-600 text-white rounded text-xs">Chương</button>
+                      <button onClick={() => deleteStory(s.id)} className="px-2 md:px-3 py-1 bg-red-700 text-white rounded text-xs">Xóa</button>
                     </td>
                   </tr>
 
@@ -415,10 +415,10 @@ export function AnimeManagement({ token, onNavigateToUpload }: AnimeManagementPr
 
                   {managingStoryId === s.id && (
                     <tr key={`manage-${s.id}`} className="bg-gray-800">
-                      <td colSpan={4} className="p-4">
-                        <div className="flex justify-between items-center mb-4">
-                          <h3 className="text-lg font-bold text-white">Chapters cho {s.title} (ID: {s.id})</h3>
-                          <button onClick={closeChapterManager} className="px-3 py-1 bg-gray-600 hover:bg-gray-500 text-white rounded">Đóng</button>
+                      <td colSpan={4} className="p-2 md:p-4">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
+                          <h3 className="text-md md:text-lg font-bold text-white line-clamp-1">Chapters của {s.title}</h3>
+                          <button onClick={closeChapterManager} className="px-3 py-1 bg-gray-600 hover:bg-gray-500 text-white rounded text-xs">Đóng</button>
                         </div>
                         {chaptersLoading ? (
                           <div className="text-gray-400">Đang tải chapters...</div>
@@ -508,7 +508,7 @@ export function AnimeManagement({ token, onNavigateToUpload }: AnimeManagementPr
                                   )}
                                 </div>
                               ))}
-                              {storyChapters.length === 0 && <div className="col-span-full text-gray-400 py-4 text-center">Không có chapter nào.</div>}
+                              {storyChapters.length === 0 && <div className="col-span-full text-gray-400 py-4 text-center text-sm italic">Không có chương nào.</div>}
                             </div>
 
                             {/* Page Manager Section */}
