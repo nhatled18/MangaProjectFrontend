@@ -1,22 +1,54 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { animeService } from '@/services/animeService';
+import { useReadingProgress } from '@/hooks/useReadingProgress';
 import { Anime } from '@/types';
 import { Footer } from '@/components/Footer';
 
+interface ContinueReadingItem {
+  id: string | number;
+  animeId: number;
+  animeName: string;
+  ch: string;
+  title: string;
+  image: string;
+  lastRead: string;
+  anime?: Anime;
+}
+
 export function Home() {
   const navigate = useNavigate();
+  const { getReadingHistory } = useReadingProgress();
   const [trending, setTrending] = useState<Anime[]>([]);
+  const [continueReading, setContinueReading] = useState<ContinueReadingItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await animeService.getTrendingAnimes(1);
-        setTrending(response.items || []);
+        
+        // Fetch trending animes
+        const trendingResponse = await animeService.getTrendingAnimes(1);
+        const trendingAnimes = trendingResponse.items || [];
+        setTrending(trendingAnimes);
+        
+        // Use trending animes for continue reading (first 4)
+        const continueData: ContinueReadingItem[] = trendingAnimes.slice(0, 4).map((anime: Anime, idx: number) => ({
+          id: anime.id || idx,
+          animeId: typeof anime.id === 'string' ? parseInt(anime.id) : anime.id,
+          animeName: anime.title,
+          ch: anime.currentEpisode || 'Ch. 1',
+          title: anime.title,
+          image: anime.image,
+          lastRead: 'Updated recently',
+          anime: anime, // Store full anime object
+        }));
+        
+        setContinueReading(continueData.length > 0 ? continueData : getMockContinueReading());
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Error fetching data:', error);
+        setContinueReading(getMockContinueReading());
       } finally {
         setLoading(false);
       }
@@ -24,8 +56,66 @@ export function Home() {
     fetchData();
   }, []);
 
+  const getMockContinueReading = (): ContinueReadingItem[] => [
+    { id: 1, animeId: 1, animeName: 'Fire Dragon', ch: '158', title: 'Fire Dragon', image: '/fairytail_volume_12.jpg', lastRead: 'Read 2 days ago' },
+    { id: 2, animeId: 2, animeName: 'Team Lucy', ch: '159', title: 'Team Lucy', image: '/fairytail_volume_12.jpg', lastRead: 'Read 2 days ago' },
+    { id: 3, animeId: 3, animeName: 'Herms Adventure', ch: '155', title: 'Herms Wagi...', image: '/fairytail_volume_12.jpg', lastRead: 'Read 2 days ago' },
+    { id: 4, animeId: 4, animeName: 'Fire Dragon', ch: '161', title: 'Fire Dragon', image: '/fairytail_volume_12.jpg', lastRead: 'Read 2 days ago' },
+  ];
+
   const handleAnimeClick = (anime: Anime) => {
     navigate(`/anime/${anime.id}`, { state: { anime } });
+  };
+
+  const handleContinueReadingClick = async (item: ContinueReadingItem) => {
+    if (!item.anime) return;
+
+    // Get last reading progress
+    const readingHistory = getReadingHistory(item.anime.id);
+    
+    // If has reading history, jump to chapter viewer
+    if (readingHistory) {
+      navigate(`/chapter/${item.anime.id}/${readingHistory.chapterId}`, {
+        state: {
+          anime: item.anime,
+          chapterId: readingHistory.chapterId,
+          chapterNumber: readingHistory.chapterNumber,
+          chapterTitle: readingHistory.chapterTitle,
+        }
+      });
+    } else {
+      // Fetch chapters and jump to newest one
+      try {
+        const animeIdentifier = item.anime.slug || item.anime.id;
+        const chapters = await animeService.getEpisodes(animeIdentifier);
+        
+        if (chapters && chapters.length > 0) {
+          // Get newest chapter (highest number)
+          const sortedChapters = [...chapters].sort((a: any, b: any) => {
+            const aNum = parseFloat(a.episodeNumber || a.chapterNumber || a.chapter_number || 0);
+            const bNum = parseFloat(b.episodeNumber || b.chapterNumber || b.chapter_number || 0);
+            return bNum - aNum;
+          });
+          
+          const newestChapter = sortedChapters[0];
+          const chapterId = newestChapter.id || '';
+          
+          navigate(`/chapter/${item.anime.id}/${encodeURIComponent(chapterId)}`, {
+            state: {
+              anime: item.anime,
+              chapters,
+            }
+          });
+        } else {
+          // Fallback to anime detail if no chapters
+          navigate(`/anime/${item.anime.id}`, { state: { anime: item.anime } });
+        }
+      } catch (err) {
+        console.error('Failed to fetch chapters:', err);
+        // Fallback to anime detail on error
+        navigate(`/anime/${item.anime.id}`, { state: { anime: item.anime } });
+      }
+    }
   };
 
   if (loading && trending.length === 0) {
@@ -35,13 +125,6 @@ export function Home() {
       </div>
     );
   }
-
-  const continueReading = [
-    { id: 1, ch: '158', title: 'Fire Dragon', progress: 80, image: '/fairytail_volume_12.jpg' },
-    { id: 2, ch: '159', title: 'Team Lucy', progress: 30, image: '/fairytail_volume_12.jpg' },
-    { id: 3, ch: '155', title: 'Herms Wagi...', progress: 100, image: '/fairytail_volume_12.jpg' },
-    { id: 4, ch: '161', title: 'Fire Dragon', progress: 15, image: '/fairytail_volume_12.jpg' },
-  ];
 
   return (
     <div className="home-content">
@@ -61,14 +144,16 @@ export function Home() {
           <h2>Continue Reading</h2>
           <div className="continue-list">
             {continueReading.map((item, idx) => (
-              <div key={item.id} className={`continue-card ${idx === 0 ? 'active' : ''}`}>
+              <div 
+                key={item.id} 
+                className={`continue-card ${idx === 0 ? 'active' : ''}`}
+                onClick={() => handleContinueReadingClick(item)}
+                style={{ cursor: 'pointer' }}
+              >
                 <img src={item.image} alt="Cover" className="c-img" />
                 <div className="c-info">
                   <div className="c-title">Ch. {item.ch}: {item.title}</div>
-                  <div className="progress-track">
-                    <div className="progress-fill" style={{ width: `${item.progress}%` }}></div>
-                  </div>
-                  <div className="c-time">Read 2 days ago</div>
+                  <div className="c-time">{item.lastRead}</div>
                 </div>
               </div>
             ))}

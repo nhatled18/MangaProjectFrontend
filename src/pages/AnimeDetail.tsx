@@ -1,9 +1,10 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Anime } from '@/types';
 import { Play, Star, Loader, Lock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { animeService } from '@/services/animeService';
 import { useAuth } from '@/hooks/useAuth';
+import { useReadingProgress } from '@/hooks/useReadingProgress';
 
 interface Chapter {
   id: string;
@@ -19,11 +20,19 @@ interface Chapter {
 export function AnimeDetail() {
   const location = useLocation();
   const navigate = useNavigate();
-  const anime = location.state?.anime as Anime;
+  const { id } = useParams<{ id: string }>();
+  let anime = location.state?.anime as Anime;
+  const [fetchedAnime, setFetchedAnime] = useState<Anime | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const { saveReadingProgress } = useReadingProgress();
+
+  // Use fetched anime if location.state doesn't have it
+  if (!anime && fetchedAnime) {
+    anime = fetchedAnime;
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,6 +43,23 @@ export function AnimeDetail() {
   }, []);
 
   const { isAuthenticated } = useAuth();
+
+  // Fetch anime details if not provided in state but available in URL
+  useEffect(() => {
+    if (!anime && id) {
+      const fetchAnime = async () => {
+        try {
+          const animeData = await animeService.getAnimeById(id);
+          if (animeData) {
+            setFetchedAnime(animeData);
+          }
+        } catch (err) {
+          console.error('Error fetching anime:', err);
+        }
+      };
+      fetchAnime();
+    }
+  }, [id, anime]);
 
   useEffect(() => {
     if (anime && anime.id) {
@@ -103,6 +129,13 @@ export function AnimeDetail() {
   };
 
   const handleChapterClick = (chapter: Chapter) => {
+    // Save reading progress
+    saveReadingProgress(anime.id, {
+      id: chapter.id,
+      chapterNumber: chapter.chapterNumber,
+      title: chapter.title,
+    }, 0); // Start at 0% progress
+    
     navigate(`/chapter/${anime.id}/${encodeURIComponent(chapter.id)}`, {
       state: { anime, chapter, chapters },
     });

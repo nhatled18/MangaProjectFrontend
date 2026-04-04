@@ -4,6 +4,7 @@ import { tokenService } from '@/services/tokenService';
 import { animeService } from '@/services/animeService';
 import { getBackendUrl } from '@/utils/image';
 import { useAuth } from '@/hooks/useAuth';
+import { useReadingProgress } from '@/hooks/useReadingProgress';
 
 export interface ChapterData {
   id: string;
@@ -25,6 +26,7 @@ export function useChapterViewer() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated } = useAuth();
+  const { saveReadingProgress } = useReadingProgress();
 
   const [chapterData, setChapterData] = useState<ChapterData | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
@@ -72,8 +74,18 @@ export function useChapterViewer() {
         const item = responseData.data.item;
         const source: 'database' | 'otruyen' = responseData.data.source || 'otruyen';
         const images = source === 'database' ? extractDatabaseImages(item) : (item.images || []);
-        setChapterData({ id: item.id, chapterNumber: item.chapterNumber || item.chapter_number || 0, title: item.title, images, source });
+        const chapter = { id: item.id, chapterNumber: item.chapterNumber || item.chapter_number || 0, title: item.title, images, source };
+        setChapterData(chapter);
         setIsLocked(false);
+        
+        // Save reading progress
+        if (animeId) {
+          saveReadingProgress(animeId, {
+            id: item.id,
+            chapterNumber: item.chapterNumber || item.chapter_number || 0,
+            title: item.title,
+          }, 50); // Save 50% progress as default when user opens chapter
+        }
       } else {
         setError('Failed to load chapter');
       }
