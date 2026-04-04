@@ -10,7 +10,7 @@ export function TokenShopPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4">
+    <div className="min-h-screen bg-gray-950 py-8 px-4">
       <div className="container mx-auto">
         <TokenShop key={refreshKey} onSuccess={handleSuccess} />
       </div>

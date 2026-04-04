@@ -18,8 +18,6 @@ import { TokenShopPage } from '@/pages/TokenShopPage';
 import { LeaderboardPage } from '@/pages/LeaderboardPage';
 // import { AboutUs } from '@/pages/AboutUs';
 
-import './App.css';
-
 import { useEffect } from 'react';
 import { tokenService } from '@/services/tokenService';
 

@@ -1,172 +1,125 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BackgroundImages } from '@/components/BackgroundImages';
-import { AnimeGrid } from '@/components/AnimeGrid';
-import { TrendingItem } from '@/components/TrendingItem';
-import { useTrendingAnimes, useNewReleases } from '@/hooks/useAnime';
 import { animeService } from '@/services/animeService';
 import { Anime } from '@/types';
-import { Loader } from 'lucide-react';
+import { Footer } from '@/components/Footer';
 
 export function Home() {
   const navigate = useNavigate();
-  const { animes: initialTrending = [], loading: trendingLoading } = useTrendingAnimes();
-  const { animes: newReleases = [], loading: newLoading } = useNewReleases();
-  const [continueWatching, setContinueWatching] = useState<Anime[]>([]);
-  const [allTrending, setAllTrending] = useState<Anime[]>([]);
-  const [trendingPage, setTrendingPage] = useState(1);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const observerTarget = useRef<HTMLDivElement>(null);
+  const [trending, setTrending] = useState<Anime[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Initialize trending
   useEffect(() => {
-    setAllTrending(initialTrending);
-  }, [initialTrending]);
-
-  // Mock continue watching data
-  useEffect(() => {
-    if (Array.isArray(newReleases)) {
-      setContinueWatching(newReleases.slice(0, 5));
-    }
-  }, [newReleases]);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const response = await animeService.getTrendingAnimes(1);
+        setTrending(response.items || []);
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleAnimeClick = (anime: Anime) => {
     navigate(`/anime/${anime.id}`, { state: { anime } });
   };
 
-  const loadMoreTrending = useCallback(async () => {
-    if (loadingMore || !hasMore) return;
-    
-    try {
-      setLoadingMore(true);
-      const nextPage = trendingPage + 1;
-      
-      // Use animeService to fetch trending with proper data conversion
-      const result = await animeService.getTrendingAnimes(nextPage);
-      
-      if (result.items && result.items.length > 0) {
-        setAllTrending(prev => {
-          // Avoid duplicates by checking if item already exists
-          const existingIds = new Set(prev.map(a => a.id));
-          const newItems = result.items.filter(item => !existingIds.has(item.id));
-          return [...prev, ...newItems];
-        });
-        setTrendingPage(nextPage);
-      } else {
-        setHasMore(false);
-      }
-    } catch (error) {
-      setHasMore(false);
-    } finally {
-      setLoadingMore(false);
-    }
-  }, [trendingPage, loadingMore, hasMore]);
-
-  // Infinite scroll observer
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loadingMore) {
-          loadMoreTrending();
-        }
-      },
-      { threshold: 0.1 }
+  if (loading && trending.length === 0) {
+    return (
+      <div className="min-h-screen bg-[var(--bg-dark)] flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-[var(--primary-red)] border-t-transparent rounded-full animate-spin"></div>
+      </div>
     );
+  }
 
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-
-    return () => {
-      if (observerTarget.current) {
-        observer.unobserve(observerTarget.current);
-      }
-    };
-  }, [loadMoreTrending, hasMore, loadingMore]);
+  const continueReading = [
+    { id: 1, ch: '158', title: 'Fire Dragon', progress: 80, image: '/fairytail_volume_12.jpg' },
+    { id: 2, ch: '159', title: 'Team Lucy', progress: 30, image: '/fairytail_volume_12.jpg' },
+    { id: 3, ch: '155', title: 'Herms Wagi...', progress: 100, image: '/fairytail_volume_12.jpg' },
+    { id: 4, ch: '161', title: 'Fire Dragon', progress: 15, image: '/fairytail_volume_12.jpg' },
+  ];
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
-      {/* Background Images */}
-      <BackgroundImages />
+    <div className="home-content">
+      {/* --- Cấu trúc Hero Banner từ Source của bạn --- */}
+      <header className="hero">
+        <div className="hero-content">
+          <h1>Fairy Tail:<br />100 Years Quest</h1>
+          <p>The magic adventure continues. Join Natsu, Lucy, and the guild as they take on the legendary quest.</p>
+          <button className="btn-primary-ft" onClick={() => trending[0] && handleAnimeClick(trending[0])}>🔥 Read Now</button>
+          <button className="btn-secondary-ft">Chapter List</button>
+        </div>
+      </header>
 
-
-      {/* Continue Watching */}
-      {continueWatching.length > 0 && (
+      <div className="container-ft">
+        {/* --- Continue Reading Section --- */}
         <section>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-              <span>Tiếp tục Đọc </span>
-            </h2>
-          </div>
-          <AnimeGrid
-            animes={continueWatching}
-            loading={newLoading}
-            onAnimeClick={handleAnimeClick}
-          />
-        </section>
-      )}
-
-      {/* New Releases */}
-      <section>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <span></span>
-            <span>Phát Hành Mới</span>
-          </h2>
-          <a href="/new-seasons" className="text-yellow-500 hover:text-yellow-400 transition-colors">
-            Xem tất cả →
-          </a>
-        </div>
-        <AnimeGrid
-          animes={newReleases}
-          loading={newLoading}
-          onAnimeClick={handleAnimeClick}
-        />
-      </section>
-
-      {/* Trending */}
-      <section>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <span></span>
-            <span>Đang Xu Hướng ({allTrending.length}+)</span>
-          </h2>
-          <a href="/popular" className="text-yellow-500 hover:text-yellow-400 transition-colors">
-            Xem tất cả →
-          </a>
-        </div>
-        <div className="space-y-4">
-          {trendingLoading ? (
-            <div className="text-center py-8 text-gray-400">Đang tải...</div>
-          ) : !Array.isArray(allTrending) || allTrending.length === 0 ? (
-            <div className="text-center py-8 text-gray-400">Không có dữ liệu</div>
-          ) : (
-            <>
-              {allTrending.map((anime, index) => (
-                <TrendingItem
-                  key={anime.id}
-                  anime={anime}
-                  rank={index + 1}
-                  onClick={handleAnimeClick}
-                />
-              ))}
-              {/* Infinite scroll trigger */}
-              <div ref={observerTarget} className="py-8 text-center">
-                {loadingMore && (
-                  <div className="flex items-center justify-center gap-2 text-gray-400">
-                    <Loader className="w-5 h-5 animate-spin" />
-                    <span>Đang tải thêm...</span>
+          <h2>Continue Reading</h2>
+          <div className="continue-list">
+            {continueReading.map((item, idx) => (
+              <div key={item.id} className={`continue-card ${idx === 0 ? 'active' : ''}`}>
+                <img src={item.image} alt="Cover" className="c-img" />
+                <div className="c-info">
+                  <div className="c-title">Ch. {item.ch}: {item.title}</div>
+                  <div className="progress-track">
+                    <div className="progress-fill" style={{ width: `${item.progress}%` }}></div>
                   </div>
-                )}
-                {!loadingMore && !hasMore && allTrending.length > 0 && (
-                  <p className="text-gray-500">Đã tải hết tất cả {allTrending.length} truyện</p>
-                )}
+                  <div className="c-time">Read 2 days ago</div>
+                </div>
               </div>
-            </>
-          )}
+            ))}
+          </div>
+        </section>
+
+        {/* --- Two Columns (Bản vẽ của bạn) --- */}
+        <div className="two-columns-ft">
+          {/* Popular Chapters (Grid) */}
+          <section>
+            <h2>Popular Chapters</h2>
+            <div className="popular-grid">
+              {(trending.length > 0 ? trending : Array(4).fill(null)).slice(0, 8).map((anime, idx) => (
+                <div key={anime?.id || idx} className="pop-card" onClick={() => anime && handleAnimeClick(anime)}>
+                  <div className="pop-cover-wrap">
+                    <div className={`badge-top ${idx === 1 ? 'badge-new' : 'badge-hot'}`}>
+                      {idx === 1 ? 'NEW' : 'HOT'}
+                    </div>
+                    <div className="badge-vol">{12 - idx}</div>
+                    <img src={anime?.image || '/fairytail_volume_12.jpg'} alt="Cover" />
+                    <div className="pop-overlay">
+                      <span className="pop-status">🔥 {idx === 1 ? 'NEW' : 'HOT'}</span>
+                      <span className="pop-views">👁 {(13.3 + idx).toFixed(1)}K</span>
+                    </div>
+                  </div>
+                  <div className="pop-title">{anime?.title || `Volume ${12 - idx}`}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Latest Updates (List) */}
+          <section>
+            <h2>Latest Updates</h2>
+            <div className="latest-list">
+              {(trending.length > 0 ? trending : Array(3).fill(null)).slice(0, 5).map((anime, idx) => (
+                <div key={anime?.id || idx} className="latest-item" onClick={() => anime && handleAnimeClick(anime)}>
+                  <img src={anime?.image || '/fairytail_volume_12.jpg'} alt="Cover" className="l-img" />
+                  <div className="l-info">
+                    <div className="l-title">{anime?.title.slice(0, 20) || 'Ch. 163 - Titania'}</div>
+                    <div className="l-time">Updated {idx + 1}h ago</div>
+                  </div>
+                  <button className="btn-read-ft">Read</button>
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
-      </section>
-    </main>
+      </div>
+
+      <Footer />
+    </div>
   );
 }

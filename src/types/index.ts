@@ -18,6 +18,8 @@ export interface User {
   username: string;
   email: string;
   avatar: string;
+  token_balance?: number;
+  role?: string;
 }
 
 export interface Episode {

@@ -42,23 +42,26 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, isModal = false }
   } = useAuthForm(onSuccess);
 
   const content = (
-    <div className="auth-card">
-      <h2>{TITLE[mode]}</h2>
+    <>
+      <div className="auth-header">
+        <h2>{TITLE[mode]}</h2>
+        <p>FAIRY TAIL READER</p>
+      </div>
 
-      <form onSubmit={handleSubmit} className="auth-form">
-        {displayError   && <div className="error-message">{displayError}</div>}
-        {successMessage && <div className="success-message">{successMessage}</div>}
+      <form onSubmit={handleSubmit} className="auth-form-wrapper">
+        {displayError   && <div className="auth-error-message">{displayError}</div>}
+        {successMessage && <div className="auth-success-message">{successMessage}</div>}
 
         {/* Username */}
         {show('username', mode) && (
-          <div className="form-group">
+          <div className="auth-input-group">
             <label htmlFor="username">Username</label>
             <input
               id="username"
               type="text"
               value={fields.username}
               onChange={(e) => setField('username', e.target.value)}
-              placeholder="Nhập username"
+              placeholder="Nhập tên đăng nhập"
               disabled={isLoading}
             />
           </div>
@@ -66,7 +69,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, isModal = false }
 
         {/* Email */}
         {show('email', mode) && (
-          <div className="form-group">
+          <div className="auth-input-group">
             <label htmlFor="email">Email</label>
             <input
               id="email"
@@ -81,14 +84,15 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, isModal = false }
 
         {/* OTP */}
         {show('otpCode', mode) && (
-          <div className="form-group">
+          <div className="auth-input-group">
             <label htmlFor="otp">Mã Xác Nhận (OTP)</label>
             <input
               id="otp"
               type="text"
+              className="auth-otp-input"
               value={fields.otpCode}
               onChange={(e) => setField('otpCode', e.target.value)}
-              placeholder="Nhập mã 6 chữ số"
+              placeholder="000000"
               maxLength={6}
               disabled={isLoading}
             />
@@ -97,7 +101,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, isModal = false }
 
         {/* Password */}
         {show('password', mode) && (
-          <div className="form-group">
+          <div className="auth-input-group">
             <label htmlFor="password">
               {mode === 'reset-password' ? 'Mật Khẩu Mới' : 'Password'}
             </label>
@@ -106,7 +110,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, isModal = false }
               type="password"
               value={fields.password}
               onChange={(e) => setField('password', e.target.value)}
-              placeholder="Nhập password"
+              placeholder="••••••••"
               disabled={isLoading}
             />
           </div>
@@ -114,7 +118,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, isModal = false }
 
         {/* Confirm Password */}
         {show('confirmPassword', mode) && (
-          <div className="form-group">
+          <div className="auth-input-group">
             <label htmlFor="confirmPassword">
               {mode === 'reset-password' ? 'Xác Nhận Mật Khẩu Mới' : 'Xác Nhận Password'}
             </label>
@@ -123,52 +127,52 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, isModal = false }
               type="password"
               value={fields.confirmPassword}
               onChange={(e) => setField('confirmPassword', e.target.value)}
-              placeholder="Nhập lại password"
+              placeholder="••••••••"
               disabled={isLoading}
             />
           </div>
         )}
 
-        <button type="submit" className="auth-button" disabled={isLoading}>
-          {isLoading ? 'Đang xử lý...' : SUBMIT_LABEL[mode]}
+        <button type="submit" className="auth-btn-submit" disabled={isLoading}>
+          {isLoading ? <div className="auth-spinner"></div> : SUBMIT_LABEL[mode]}
         </button>
       </form>
 
-      {/* Navigation links */}
-      <div className="auth-toggle">
+      <div className="auth-footer">
         {mode === 'login' && (
-          <>
+          <div className="auth-toggle-buttons">
             <button
               onClick={goToForgotPassword}
-              className="forgot-password-link"
+              className="auth-toggle-link"
               disabled={isLoading}
-              style={{ display: 'block', margin: '0 auto 10px', background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: '0.9rem' }}
             >
               Quên mật khẩu?
             </button>
-            Chưa có tài khoản?{' '}
-            <button onClick={goToRegister} className="toggle-button" disabled={isLoading}>
-              Đăng ký ngay
-            </button>
-          </>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
+              Chưa có tài khoản?{' '}
+              <button onClick={goToRegister} className="auth-register-link" disabled={isLoading}>
+                Đăng ký ngay
+              </button>
+            </p>
+          </div>
         )}
 
         {mode === 'register' && (
-          <>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
             Đã có tài khoản?{' '}
-            <button onClick={goToLogin} className="toggle-button" disabled={isLoading}>
+            <button onClick={goToLogin} className="auth-register-link" disabled={isLoading}>
               Đăng nhập
             </button>
-          </>
+          </p>
         )}
 
         {(mode === 'forgot-password' || mode === 'verify-code' || mode === 'reset-password') && (
-          <button onClick={goToLogin} className="toggle-button" disabled={isLoading}>
-            Quay lại Đăng nhập
+          <button onClick={goToLogin} className="auth-toggle-link" disabled={isLoading}>
+            ← Quay lại đăng nhập
           </button>
         )}
       </div>
-    </div>
+    </>
   );
 
   if (isModal) return content;

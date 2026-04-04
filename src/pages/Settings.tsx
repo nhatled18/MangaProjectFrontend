@@ -41,31 +41,25 @@ export function Settings() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 py-8 px-4">
+    <div className="settings-page min-h-screen py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-white mb-8">Cài đặt</h1>
+        <h1 className="settings-title">Cài đặt</h1>
 
         {/* Global message alert */}
         {message && (
-          <div
-            className={`mb-6 p-4 rounded-lg transition-all ${
-              message.type === 'success'
-                ? 'bg-green-500/20 border border-green-500 text-green-300'
-                : 'bg-red-500/20 border border-red-500 text-red-300'
-            }`}
-          >
+          <div className={`settings-alert ${message.type}`}>
             {message.text}
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="settings-container">
           {/* Sidebar */}
-          <div className="lg:col-span-1">
+          <div>
             <SettingsSidebar activeTab={activeTab} theme={theme} onTabChange={setActiveTab} />
           </div>
 
           {/* Tab content */}
-          <div className="lg:col-span-3">
+          <div className="settings-content">
             {activeTab === 'password' && <ChangePasswordTab onMessage={setMessage} />}
             {activeTab === 'notifications' && (
               <NotificationsTab notifications={notifications} onChange={handleNotificationChange} />

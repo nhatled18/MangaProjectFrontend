@@ -37,7 +37,7 @@ const TokenShop: React.FC<TokenShopProps> = ({ onClose, onSuccess }) => {
   } = useTokenShop(onSuccess);
 
   return (
-    <div className="token-shop bg-white rounded-lg shadow-lg p-6 max-w-4xl mx-auto text-gray-800">
+    <div className="token-shop max-w-4xl mx-auto">
 
       {/* Payment Modal */}
       {selectedPackage && (

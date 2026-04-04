@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Settings, LogOut } from 'lucide-react';
+import { User, Settings, LogOut, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -11,7 +11,7 @@ interface UserMenuProps {
 
 export const UserMenu: React.FC<UserMenuProps> = React.memo(({ isOpen, onToggle, onClose }) => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
 
   const handleLogout = () => {
     onClose();
@@ -24,29 +24,51 @@ export const UserMenu: React.FC<UserMenuProps> = React.memo(({ isOpen, onToggle,
     { label: 'Cài đặt', icon: Settings, onClick: () => { navigate('/settings'); onClose(); } },
   ];
 
+  if (isAdmin) {
+    menuItems.unshift({ 
+      label: 'Dashboard Admin', 
+      icon: Shield, 
+      onClick: () => { navigate('/admin'); onClose(); } 
+    });
+  }
+
   return (
-    <div className="relative">
+    <div style={{ position: 'relative' }}>
       <button
         onClick={onToggle}
-        className="text-gray-400 hover:text-yellow-500 p-2 flex items-center gap-2"
+        style={{ 
+          background: 'none', 
+          border: 'none', 
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          transition: 'all 0.3s ease'
+        }}
         aria-expanded={isOpen}
       >
-        <User size={20} />
-        <div className="hidden sm:flex flex-col items-start leading-tight">
-          <span className="text-gray-300 text-sm max-w-[100px] truncate">
+        <img 
+          src="/natsu-chibi.png" 
+          alt="User Avatar" 
+          className="user-avatar-ft" 
+        />
+        <div style={{ 
+          display: 'none'
+        }} className="user-info-text">
+          <span style={{ color: 'white', fontSize: '0.875rem', fontWeight: 'bold', display: 'block' }}>
             {user?.username}
           </span>
-          <span className="text-yellow-500 text-[10px] font-bold">
+          <span style={{ color: 'var(--primary-red)', fontSize: '0.625rem', fontWeight: 900, letterSpacing: '0.05em', display: 'block' }}>
             {user?.token_balance?.toLocaleString() ?? 0} TOKEN
           </span>
         </div>
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-lg py-2 z-50">
-          <div className="px-4 py-2 border-b border-gray-700">
-            <p className="text-gray-300 text-sm font-semibold">{user?.username}</p>
-            <p className="text-gray-500 text-xs">{user?.email}</p>
+        <div className="user-menu-dropdown">
+          <div className="user-menu-header">
+            <p>{user?.username}</p>
+            <p className="email">{user?.email}</p>
           </div>
 
           <button
@@ -54,7 +76,7 @@ export const UserMenu: React.FC<UserMenuProps> = React.memo(({ isOpen, onToggle,
               navigate('/token-shop');
               onClose();
             }}
-            className="w-full text-left px-4 py-2 text-blue-400 hover:bg-gray-700 hover:text-blue-300 transition-colors font-semibold text-sm border-b border-gray-700"
+            className="user-menu-item buy-token"
           >
             ⭐ Mua Token
           </button>
@@ -63,18 +85,18 @@ export const UserMenu: React.FC<UserMenuProps> = React.memo(({ isOpen, onToggle,
             <button
               key={item.label}
               onClick={item.onClick}
-              className="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-yellow-500 transition-colors flex items-center gap-2"
+              className="user-menu-item"
             >
-              {item.icon && <item.icon size={16} />}
+              {item.icon && <item.icon size={16} style={{ flexShrink: 0 }} />}
               {item.label}
             </button>
           ))}
 
           <button
             onClick={handleLogout}
-            className="w-full text-left px-4 py-2 text-red-400 hover:bg-gray-700 transition-colors flex items-center gap-2 border-t border-gray-700"
+            className="user-menu-item logout"
           >
-            <LogOut size={16} />
+            <LogOut size={16} style={{ flexShrink: 0 }} />
             Đăng xuất
           </button>
         </div>

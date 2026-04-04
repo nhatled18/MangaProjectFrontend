@@ -38,16 +38,12 @@ const NAV_ITEMS: {
 
 export function SettingsSidebar({ activeTab, theme, onTabChange }: Props) {
   return (
-    <nav className="space-y-2">
+    <nav className="settings-sidebar">
       {NAV_ITEMS.map(({ tab, label, icon }) => (
         <button
           key={tab}
           onClick={() => onTabChange(tab)}
-          className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-            activeTab === tab
-              ? 'bg-yellow-500 text-gray-900 font-semibold'
-              : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-          }`}
+          className={`settings-tab-btn ${activeTab === tab ? 'active' : ''}`}
         >
           {icon?.(theme)}
           {label}

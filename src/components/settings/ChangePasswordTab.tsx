@@ -69,25 +69,25 @@ export function ChangePasswordTab({ onMessage }: Props) {
   ];
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-lg p-8">
-      <h2 className="text-2xl font-bold text-white mb-6">Đổi mật khẩu</h2>
+    <div>
+      <h2>Đổi mật khẩu</h2>
+      <div className="settings-divider"></div>
       <div className="space-y-4">
         {fields.map(({ key, label, placeholder }) => (
-          <div key={key}>
-            <label className="block text-gray-300 text-sm font-semibold mb-2">{label}</label>
+          <div key={key} className="settings-group">
+            <label>{label}</label>
             <div className="relative">
               <input
                 type={show[key] ? 'text' : 'password'}
                 value={passwords[key]}
                 onChange={set(key)}
-                className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
                 placeholder={placeholder}
                 disabled={loading}
               />
               <button
                 type="button"
                 onClick={() => toggleShow(key)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-yellow-500"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500"
                 disabled={loading}
               >
                 {show[key] ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -99,7 +99,7 @@ export function ChangePasswordTab({ onMessage }: Props) {
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full bg-yellow-500 text-gray-900 font-semibold py-2 rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="settings-button"
         >
           {loading ? 'Đang xử lý...' : 'Cập nhật mật khẩu'}
         </button>

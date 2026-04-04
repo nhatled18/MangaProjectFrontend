@@ -35,62 +35,49 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 py-4 md:py-8 px-2 md:px-4">
+    <div className="admin-dashboard">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-6 md:mb-8">
+        <div className="admin-header">
           <div className="flex items-center gap-2 md:gap-3 mb-2">
             <Shield className="text-yellow-500" size={28} />
-            <h1 className="text-2xl md:text-4xl font-bold text-white">Admin Dashboard</h1>
+            <h1>Admin Dashboard</h1>
           </div>
-          <p className="text-gray-400 text-sm md:text-base">Quản lý người dùng và upload truyện & chương</p>
+          <p>Quản lý người dùng và upload truyện & chương</p>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-4 mb-8 border-b border-gray-800 overflow-x-auto">
+        <div className="admin-tabs">
           <button
             onClick={() => setActiveTab('users')}
-            className={`px-4 py-2 font-semibold border-b-2 transition-colors whitespace-nowrap ${activeTab === 'users'
-                ? 'text-yellow-500 border-yellow-500'
-                : 'text-gray-400 border-transparent hover:text-white'
-              }`}
+            className={`admin-tab ${activeTab === 'users' ? 'active' : ''}`}
           >
             Manage Users
           </button>
           <button
             onClick={() => setActiveTab('upload-anime')}
-            className={`px-4 py-2 font-semibold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'upload-anime'
-                ? 'text-yellow-500 border-yellow-500'
-                : 'text-gray-400 border-transparent hover:text-white'
-              }`}
+            className={`admin-tab ${activeTab === 'upload-anime' ? 'active' : ''} flex items-center gap-2`}
           >
             <Plus size={18} />
             Upload Truyện & Chương
           </button>
           <button
             onClick={() => setActiveTab('my-stories')}
-            className={`px-4 py-2 font-semibold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'my-stories'
-                ? 'text-yellow-500 border-yellow-500'
-                : 'text-gray-400 border-transparent hover:text-white'
-              }`}
+            className={`admin-tab ${activeTab === 'my-stories' ? 'active' : ''} flex items-center gap-2`}
           >
             <CheckCircle size={18} />
             Quản lý truyện
           </button>
         </div>
 
-        {/* Users Tab */}
-        {activeTab === 'users' && <UserManagement token={token} />}
-
-        {/* Upload Anime & Chapters Tab */}
-        {activeTab === 'upload-anime' && (
-          <AnimeUpload token={token} />
-        )}
-
-        {/* My Stories Tab */}
-        {activeTab === 'my-stories' && (
-          <AnimeManagement token={token} onNavigateToUpload={() => { setActiveTab('upload-anime'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
-        )}
+        {/* Content */}
+        <div className="admin-content">
+          {activeTab === 'users' && <UserManagement token={token} />}
+          {activeTab === 'upload-anime' && <AnimeUpload token={token} />}
+          {activeTab === 'my-stories' && (
+            <AnimeManagement token={token} onNavigateToUpload={() => { setActiveTab('upload-anime'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
+          )}
+        </div>
       </div>
     </div>
   );
