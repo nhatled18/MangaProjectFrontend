@@ -21,11 +21,29 @@ interface GlobalTimelineItem extends ChapterProgress {
 const STORAGE_KEY = 'reading_progress';
 const GLOBAL_TIMELINE_KEY = 'reading_timeline_global';
 
+// ✅ Helper to generate user-specific storage keys
+const getUserStorageKey = (key: string, userId: string | number | null): string => {
+  if (!userId) return key; // Fallback for anonymous users
+  return `${key}_user_${userId}`;
+};
+
 export function useReadingProgress() {
+  // ✅ Helper to get user ID (can be null for anonymous users)
+  const getUserId = (): string | number | null => {
+    try {
+      // Try to get from localStorage (set during login)
+      const stored = localStorage.getItem('currentUserId');
+      return stored ? parseInt(stored) : null;
+    } catch {
+      return null;
+    }
+  };
+
   // Lấy toàn bộ lịch sử đọc của một truyện
   const getAllChapterProgress = useCallback((animeId: string | number): ChapterProgress[] => {
     try {
-      const history = localStorage.getItem(`${STORAGE_KEY}_${animeId}`);
+      const userId = getUserId();
+      const history = localStorage.getItem(getUserStorageKey(`${STORAGE_KEY}_${animeId}`, userId));
       if (!history) return [];
       const progressMap: ReadingHistory = JSON.parse(history);
       return Object.values(progressMap).sort((a, b) => a.chapterNumber - b.chapterNumber);
@@ -38,7 +56,8 @@ export function useReadingProgress() {
   // Lấy tiến trình của một chapter cụ thể
   const getChapterProgress = useCallback((animeId: string | number, chapterId: string): ChapterProgress | null => {
     try {
-      const history = localStorage.getItem(`${STORAGE_KEY}_${animeId}`);
+      const userId = getUserId();
+      const history = localStorage.getItem(getUserStorageKey(`${STORAGE_KEY}_${animeId}`, userId));
       if (!history) return null;
       const progressMap: ReadingHistory = JSON.parse(history);
       return progressMap[chapterId] || null;
@@ -68,8 +87,9 @@ export function useReadingProgress() {
       title: string;
     }, progress: number = 0) => {
       try {
-        // Lấy lịch sử hiện tại
-        const history = localStorage.getItem(`${STORAGE_KEY}_${animeId}`);
+        const userId = getUserId();
+        const storageKey = getUserStorageKey(`${STORAGE_KEY}_${animeId}`, userId);
+        const history = localStorage.getItem(storageKey);
         const progressMap: ReadingHistory = history ? JSON.parse(history) : {};
 
         // Thêm hoặc cập nhật chapter
@@ -81,7 +101,7 @@ export function useReadingProgress() {
           lastReadTime: Date.now(),
         };
 
-        localStorage.setItem(`${STORAGE_KEY}_${animeId}`, JSON.stringify(progressMap));
+        localStorage.setItem(storageKey, JSON.stringify(progressMap));
       } catch (error) {
         console.error('Error saving progress:', error);
       }
@@ -92,13 +112,15 @@ export function useReadingProgress() {
   // Cập nhật tiến trình của chapter hiện tại
   const updateProgress = useCallback((animeId: string | number, chapterId: string, progress: number) => {
     try {
-      const history = localStorage.getItem(`${STORAGE_KEY}_${animeId}`);
+      const userId = getUserId();
+      const storageKey = getUserStorageKey(`${STORAGE_KEY}_${animeId}`, userId);
+      const history = localStorage.getItem(storageKey);
       const progressMap: ReadingHistory = history ? JSON.parse(history) : {};
 
       if (progressMap[chapterId]) {
         progressMap[chapterId].progress = Math.min(100, Math.max(0, progress));
         progressMap[chapterId].lastReadTime = Date.now();
-        localStorage.setItem(`${STORAGE_KEY}_${animeId}`, JSON.stringify(progressMap));
+        localStorage.setItem(storageKey, JSON.stringify(progressMap));
       }
     } catch (error) {
       console.error('Error updating progress:', error);
@@ -108,11 +130,13 @@ export function useReadingProgress() {
   // Xóa tiến trình của một chapter cụ thể
   const deleteChapterProgress = useCallback((animeId: string | number, chapterId: string) => {
     try {
-      const history = localStorage.getItem(`${STORAGE_KEY}_${animeId}`);
+      const userId = getUserId();
+      const storageKey = getUserStorageKey(`${STORAGE_KEY}_${animeId}`, userId);
+      const history = localStorage.getItem(storageKey);
       if (history) {
         const progressMap: ReadingHistory = JSON.parse(history);
         delete progressMap[chapterId];
-        localStorage.setItem(`${STORAGE_KEY}_${animeId}`, JSON.stringify(progressMap));
+        localStorage.setItem(storageKey, JSON.stringify(progressMap));
       }
     } catch (error) {
       console.error('Error deleting chapter progress:', error);
@@ -122,7 +146,9 @@ export function useReadingProgress() {
   // Xóa toàn bộ lịch sử của một truyện
   const clearReadingHistory = useCallback((animeId: string | number) => {
     try {
-      localStorage.removeItem(`${STORAGE_KEY}_${animeId}`);
+      const userId = getUserId();
+      const storageKey = getUserStorageKey(`${STORAGE_KEY}_${animeId}`, userId);
+      localStorage.removeItem(storageKey);
     } catch (error) {
       console.error('Error clearing history:', error);
     }
@@ -131,7 +157,9 @@ export function useReadingProgress() {
   // ✅ Lấy global reading timeline (top 10 chapters read across all animes)
   const getGlobalReadingTimeline = useCallback((): GlobalTimelineItem[] => {
     try {
-      const timeline = localStorage.getItem(GLOBAL_TIMELINE_KEY);
+      const userId = getUserId();
+      const storageKey = getUserStorageKey(GLOBAL_TIMELINE_KEY, userId);
+      const timeline = localStorage.getItem(storageKey);
       return timeline ? JSON.parse(timeline) : [];
     } catch (error) {
       console.error('Error getting global timeline:', error);
@@ -151,6 +179,8 @@ export function useReadingProgress() {
     image: string
   ) => {
     try {
+      const userId = getUserId();
+      const storageKey = getUserStorageKey(GLOBAL_TIMELINE_KEY, userId);
       const timeline: GlobalTimelineItem[] = getGlobalReadingTimeline();
       const uniqueId = `${animeId}_${chapter.id}`;
       
@@ -170,7 +200,7 @@ export function useReadingProgress() {
       };
       
       const updated = [newItem, ...filtered].slice(0, 10); // Keep only top 10
-      localStorage.setItem(GLOBAL_TIMELINE_KEY, JSON.stringify(updated));
+      localStorage.setItem(storageKey, JSON.stringify(updated));
     } catch (error) {
       console.error('Error adding to global timeline:', error);
     }
@@ -179,7 +209,9 @@ export function useReadingProgress() {
   // ✅ Clear global timeline
   const clearGlobalTimeline = useCallback(() => {
     try {
-      localStorage.removeItem(GLOBAL_TIMELINE_KEY);
+      const userId = getUserId();
+      const storageKey = getUserStorageKey(GLOBAL_TIMELINE_KEY, userId);
+      localStorage.removeItem(storageKey);
     } catch (error) {
       console.error('Error clearing global timeline:', error);
     }

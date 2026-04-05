@@ -19,9 +19,14 @@ class AuthStore {
       try {
         this.user = JSON.parse(storedUser);
         this.token = storedToken;
+        // ✅ Restore currentUserId for reading progress separation
+        if (this.user && this.user.id) {
+          localStorage.setItem('currentUserId', String(this.user.id));
+        }
       } catch (e) {
         localStorage.removeItem('user');
         localStorage.removeItem('token');
+        localStorage.removeItem('currentUserId');
       }
     }
   }
@@ -45,9 +50,13 @@ class AuthStore {
     if (token && user) {
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
+      // ✅ Set currentUserId for reading progress separation
+      localStorage.setItem('currentUserId', String(user.id));
     } else {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      // ✅ Clear currentUserId on logout
+      localStorage.removeItem('currentUserId');
     }
 
     this.notify();

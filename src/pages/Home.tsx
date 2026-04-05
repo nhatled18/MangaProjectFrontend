@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { animeService } from '@/services/animeService';
 import { useReadingProgress } from '@/hooks/useReadingProgress';
+import { useAuth } from '@/hooks/useAuth';
 import { Anime } from '@/types';
 import { Footer } from '@/components/Footer';
 
@@ -18,9 +19,19 @@ interface GlobalTimelineItem {
 export function Home() {
   const navigate = useNavigate();
   const { getGlobalReadingTimeline } = useReadingProgress();
+  const { isAuthenticated, user } = useAuth();
   const [trending, setTrending] = useState<Anime[]>([]);
   const [continueReading, setContinueReading] = useState<GlobalTimelineItem[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // ✅ Update currentUserId in localStorage when user changes
+  useEffect(() => {
+    if (isAuthenticated && user?.id) {
+      localStorage.setItem('currentUserId', String(user.id));
+    } else {
+      localStorage.removeItem('currentUserId');
+    }
+  }, [isAuthenticated, user?.id]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,7 +55,7 @@ export function Home() {
     };
     
     fetchData();
-  }, [getGlobalReadingTimeline]);
+  }, [getGlobalReadingTimeline, isAuthenticated, user?.id]);
 
   const handleAnimeClick = (anime: Anime) => {
     navigate(`/anime/${anime.id}`, { state: { anime } });
