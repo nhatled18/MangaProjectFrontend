@@ -26,7 +26,7 @@ export function useChapterViewer() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated } = useAuth();
-  const { saveReadingProgress } = useReadingProgress();
+  const { saveReadingProgress, addToGlobalTimeline } = useReadingProgress();
 
   const [chapterData, setChapterData] = useState<ChapterData | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
@@ -85,6 +85,21 @@ export function useChapterViewer() {
             chapterNumber: item.chapterNumber || item.chapter_number || 0,
             title: item.title,
           }, 50); // Save 50% progress as default when user opens chapter
+
+          // ✅ Add to global reading timeline
+          const anime = location.state?.anime;
+          if (anime) {
+            addToGlobalTimeline(
+              animeId,
+              {
+                id: item.id,
+                chapterNumber: item.chapterNumber || item.chapter_number || 0,
+                title: item.title,
+              },
+              anime.title || `Anime ${animeId}`,
+              anime.image || '/fairytail_volume_12.jpg'
+            );
+          }
         }
       } else {
         setError('Failed to load chapter');

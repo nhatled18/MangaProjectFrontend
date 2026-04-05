@@ -12,7 +12,14 @@ interface ReadingHistory {
   [chapterId: string]: ChapterProgress;
 }
 
+interface GlobalTimelineItem extends ChapterProgress {
+  animeId: string | number;
+  animeName: string;
+  image: string;
+}
+
 const STORAGE_KEY = 'reading_progress';
+const GLOBAL_TIMELINE_KEY = 'reading_timeline_global';
 
 export function useReadingProgress() {
   // Lấy toàn bộ lịch sử đọc của một truyện
@@ -121,6 +128,63 @@ export function useReadingProgress() {
     }
   }, []);
 
+  // ✅ Lấy global reading timeline (top 10 chapters read across all animes)
+  const getGlobalReadingTimeline = useCallback((): GlobalTimelineItem[] => {
+    try {
+      const timeline = localStorage.getItem(GLOBAL_TIMELINE_KEY);
+      return timeline ? JSON.parse(timeline) : [];
+    } catch (error) {
+      console.error('Error getting global timeline:', error);
+      return [];
+    }
+  }, []);
+
+  // ✅ Thêm/cập nhật chapter vào global timeline (move to top nếu đã tồn tại)
+  const addToGlobalTimeline = useCallback((
+    animeId: string | number,
+    chapter: {
+      id: string;
+      chapterNumber: number;
+      title: string;
+    },
+    animeName: string,
+    image: string
+  ) => {
+    try {
+      const timeline: GlobalTimelineItem[] = getGlobalReadingTimeline();
+      const uniqueId = `${animeId}_${chapter.id}`;
+      
+      // Remove if already exists (to move to top)
+      const filtered = timeline.filter(item => `${item.animeId}_${item.chapterId}` !== uniqueId);
+      
+      // Add to top
+      const newItem: GlobalTimelineItem = {
+        animeId,
+        chapterId: chapter.id,
+        chapterNumber: chapter.chapterNumber,
+        chapterTitle: chapter.title,
+        animeName,
+        image,
+        progress: 0,
+        lastReadTime: Date.now(),
+      };
+      
+      const updated = [newItem, ...filtered].slice(0, 10); // Keep only top 10
+      localStorage.setItem(GLOBAL_TIMELINE_KEY, JSON.stringify(updated));
+    } catch (error) {
+      console.error('Error adding to global timeline:', error);
+    }
+  }, [getGlobalReadingTimeline]);
+
+  // ✅ Clear global timeline
+  const clearGlobalTimeline = useCallback(() => {
+    try {
+      localStorage.removeItem(GLOBAL_TIMELINE_KEY);
+    } catch (error) {
+      console.error('Error clearing global timeline:', error);
+    }
+  }, []);
+
   return {
     getAllChapterProgress,
     getChapterProgress,
@@ -129,5 +193,8 @@ export function useReadingProgress() {
     updateProgress,
     deleteChapterProgress,
     clearReadingHistory,
+    getGlobalReadingTimeline,
+    addToGlobalTimeline,
+    clearGlobalTimeline,
   };
 }
