@@ -1,26 +1,23 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { animeService } from '@/services/animeService';
-import { useReadingProgress } from '@/hooks/useReadingProgress';
 import { Anime } from '@/types';
 import { Footer } from '@/components/Footer';
 
-interface ContinueReadingItem {
-  id: string | number;
+interface ReadingHistoryItem {
   animeId: number;
   animeName: string;
-  ch: string;
-  title: string;
+  chapterNumber: number;
+  chapterTitle: string;
   image: string;
   lastRead: string;
-  anime?: Anime;
+  chapterId: string;
 }
 
 export function Home() {
   const navigate = useNavigate();
-  const { getLastReadChapter } = useReadingProgress();
   const [trending, setTrending] = useState<Anime[]>([]);
-  const [continueReading, setContinueReading] = useState<ContinueReadingItem[]>([]);
+  const [readingHistory, setReadingHistory] = useState<ReadingHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,94 +25,97 @@ export function Home() {
       try {
         setLoading(true);
         
-        // Fetch trending animes
+        // ✅ Fetch trending animes from API
         const trendingResponse = await animeService.getTrendingAnimes(1);
         const trendingAnimes = trendingResponse.items || [];
         setTrending(trendingAnimes);
         
-        // Use trending animes for continue reading (first 4)
-        const continueData: ContinueReadingItem[] = trendingAnimes.slice(0, 4).map((anime: Anime, idx: number) => ({
-          id: anime.id || idx,
-          animeId: typeof anime.id === 'string' ? parseInt(anime.id) : anime.id,
-          animeName: anime.title,
-          ch: anime.currentEpisode || 'Ch. 1',
-          title: anime.title,
-          image: anime.image,
-          lastRead: 'Updated recently',
-          anime: anime, // Store full anime object
-        }));
-        
-        setContinueReading(continueData.length > 0 ? continueData : getMockContinueReading());
+        // ✅ Load reading history from localStorage
+        const history = loadReadingHistoryFromStorage();
+        setReadingHistory(history);
       } catch (error) {
         console.error('Error fetching data:', error);
-        setContinueReading(getMockContinueReading());
+        setReadingHistory([]);
       } finally {
         setLoading(false);
       }
     };
+    
     fetchData();
   }, []);
 
-  const getMockContinueReading = (): ContinueReadingItem[] => [
-    { id: 1, animeId: 1, animeName: 'Fire Dragon', ch: '158', title: 'Fire Dragon', image: '/fairytail_volume_12.jpg', lastRead: 'Read 2 days ago' },
-    { id: 2, animeId: 2, animeName: 'Team Lucy', ch: '159', title: 'Team Lucy', image: '/fairytail_volume_12.jpg', lastRead: 'Read 2 days ago' },
-    { id: 3, animeId: 3, animeName: 'Herms Adventure', ch: '155', title: 'Herms Wagi...', image: '/fairytail_volume_12.jpg', lastRead: 'Read 2 days ago' },
-    { id: 4, animeId: 4, animeName: 'Fire Dragon', ch: '161', title: 'Fire Dragon', image: '/fairytail_volume_12.jpg', lastRead: 'Read 2 days ago' },
-  ];
+  // ✅ Load all reading history from localStorage
+  const loadReadingHistoryFromStorage = (): ReadingHistoryItem[] => {
+    const STORAGE_KEY = 'reading_progress';
+    const history: ReadingHistoryItem[] = [];
+    
+    // Duyệt tất cả localStorage keys để tìm reading progress
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      
+      if (key && key.startsWith(STORAGE_KEY + '_')) {
+        try {
+          const animeId = parseInt(key.replace(STORAGE_KEY + '_', ''));
+          const progressData = localStorage.getItem(key);
+          
+          if (progressData) {
+            const progressMap = JSON.parse(progressData);
+            // Lấy chapter được đọc cuối cùng
+            const chapters = Object.values(progressMap as any).sort((a: any, b: any) => {
+              return new Date(b.lastReadTime).getTime() - new Date(a.lastReadTime).getTime();
+            });
+            
+            if (chapters.length > 0) {
+              const lastChapter = chapters[0] as any;
+              history.push({
+                animeId,
+                animeName: `Anime ${animeId}`, // Sẽ được cập nhật từ API
+                chapterNumber: lastChapter.chapterNumber,
+                chapterTitle: lastChapter.chapterTitle,
+                image: '/fairytail_volume_12.jpg', // Sẽ được cập nhật từ API
+                lastRead: new Date(lastChapter.lastReadTime).toLocaleDateString('vi-VN'),
+                chapterId: lastChapter.chapterId,
+              });
+            }
+          }
+        } catch (e) {
+          console.error('Error parsing reading history:', e);
+        }
+      }
+    }
+    
+    // Fetch anime data từ API để cập nhật tên và hình ảnh
+    if (history.length > 0) {
+      history.forEach(async (item) => {
+        try {
+          const anime = await animeService.getAnimeById(String(item.animeId));
+          if (anime) {
+            item.animeName = anime.title;
+            item.image = anime.image;
+          }
+        } catch (e) {
+          console.error('Failed to fetch anime:', e);
+        }
+      });
+    }
+    
+    return history;
+  };
 
   const handleAnimeClick = (anime: Anime) => {
     navigate(`/anime/${anime.id}`, { state: { anime } });
   };
 
-  const handleContinueReadingClick = async (item: ContinueReadingItem) => {
-    if (!item.anime) return;
-
-    // Get last reading progress
-    const lastReadChapter = getLastReadChapter(item.anime.id);
-    
-    // If has reading history, jump to chapter viewer
-    if (lastReadChapter) {
-      navigate(`/chapter/${item.anime.id}/${lastReadChapter.chapterId}`, {
-        state: {
-          anime: item.anime,
-          chapterId: lastReadChapter.chapterId,
-          chapterNumber: lastReadChapter.chapterNumber,
-          chapterTitle: lastReadChapter.chapterTitle,
-        }
-      });
-    } else {
-      // Fetch chapters and jump to newest one
-      try {
-        const animeIdentifier = item.anime.slug || item.anime.id;
-        const chapters = await animeService.getEpisodes(animeIdentifier);
-        
-        if (chapters && chapters.length > 0) {
-          // Get newest chapter (highest number)
-          const sortedChapters = [...chapters].sort((a: any, b: any) => {
-            const aNum = parseFloat(a.episodeNumber || a.chapterNumber || a.chapter_number || 0);
-            const bNum = parseFloat(b.episodeNumber || b.chapterNumber || b.chapter_number || 0);
-            return bNum - aNum;
-          });
-          
-          const newestChapter = sortedChapters[0];
-          const chapterId = newestChapter.id || '';
-          
-          navigate(`/chapter/${item.anime.id}/${encodeURIComponent(chapterId)}`, {
-            state: {
-              anime: item.anime,
-              chapters,
-            }
-          });
-        } else {
-          // Fallback to anime detail if no chapters
-          navigate(`/anime/${item.anime.id}`, { state: { anime: item.anime } });
-        }
-      } catch (err) {
-        console.error('Failed to fetch chapters:', err);
-        // Fallback to anime detail on error
-        navigate(`/anime/${item.anime.id}`, { state: { anime: item.anime } });
+  // ✅ Click từ Reading History
+  const handleReadingHistoryClick = (item: ReadingHistoryItem) => {
+    navigate(`/chapter/${item.animeId}/${encodeURIComponent(item.chapterId)}`, {
+      state: {
+        anime: { id: item.animeId, title: item.animeName, image: item.image },
+        chapterId: item.chapterId,
+        chapterNumber: item.chapterNumber,
+        chapterTitle: item.chapterTitle,
       }
-    }
+    });
   };
 
   if (loading && trending.length === 0) {
@@ -139,32 +139,34 @@ export function Home() {
       </header>
 
       <div className="container-ft">
-        {/* --- Continue Reading Section --- */}
-        <section>
-          <h2>Continue Reading</h2>
-          <div className="continue-list">
-            {continueReading.map((item, idx) => (
-              <div 
-                key={item.id} 
-                className={`continue-card ${idx === 0 ? 'active' : ''}`}
-                onClick={() => handleContinueReadingClick(item)}
-                style={{ cursor: 'pointer' }}
-              >
-                <img src={item.image} alt="Cover" className="c-img" />
-                <div className="c-info">
-                  <div className="c-title">Ch. {item.ch}: {item.title}</div>
-                  <div className="c-time">{item.lastRead}</div>
+        {/* --- Reading History Section (Thực tế từ localStorage) --- */}
+        {readingHistory.length > 0 && (
+          <section>
+            <h2>📖 Your Reading History</h2>
+            <div className="continue-list">
+              {readingHistory.slice(0, 4).map((item) => (
+                <div 
+                  key={`${item.animeId}-${item.chapterId}`}
+                  className="continue-card"
+                  onClick={() => handleReadingHistoryClick(item)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <img src={item.image} alt="Cover" className="c-img" />
+                  <div className="c-info">
+                    <div className="c-title">Ch. {item.chapterNumber}: {item.animeName}</div>
+                    <div className="c-time">{item.lastRead}</div>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* --- Two Columns (Bản vẽ của bạn) --- */}
         <div className="two-columns-ft">
           {/* Popular Chapters (Grid) */}
           <section>
-            <h2>Popular Chapters</h2>
+            <h2>🔥 Popular Chapters</h2>
             <div className="popular-grid">
               {(trending.length > 0 ? trending : Array(4).fill(null)).slice(0, 8).map((anime, idx) => (
                 <div key={anime?.id || idx} className="pop-card" onClick={() => anime && handleAnimeClick(anime)}>
