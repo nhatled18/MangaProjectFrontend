@@ -18,7 +18,7 @@ interface ContinueReadingItem {
 
 export function Home() {
   const navigate = useNavigate();
-  const { getReadingHistory } = useReadingProgress();
+  const { getLastReadChapter } = useReadingProgress();
   const [trending, setTrending] = useState<Anime[]>([]);
   const [continueReading, setContinueReading] = useState<ContinueReadingItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,16 +71,16 @@ export function Home() {
     if (!item.anime) return;
 
     // Get last reading progress
-    const readingHistory = getReadingHistory(item.anime.id);
+    const lastReadChapter = getLastReadChapter(item.anime.id);
     
     // If has reading history, jump to chapter viewer
-    if (readingHistory) {
-      navigate(`/chapter/${item.anime.id}/${readingHistory.chapterId}`, {
+    if (lastReadChapter) {
+      navigate(`/chapter/${item.anime.id}/${lastReadChapter.chapterId}`, {
         state: {
           anime: item.anime,
-          chapterId: readingHistory.chapterId,
-          chapterNumber: readingHistory.chapterNumber,
-          chapterTitle: readingHistory.chapterTitle,
+          chapterId: lastReadChapter.chapterId,
+          chapterNumber: lastReadChapter.chapterNumber,
+          chapterTitle: lastReadChapter.chapterTitle,
         }
       });
     } else {
