@@ -22,6 +22,7 @@ export const Navbar = () => {
           <div className="nav-links" style={{ display: 'flex', gap: '16px' }}>
             <Link to="/">Home</Link>
             <Link to="/anime-list" style={{ color: 'var(--text-muted)' }}>Chapters</Link>
+            <Link to="/about" style={{ color: 'var(--text-muted)' }}>About Us</Link>
           </div>
         </div>
 
