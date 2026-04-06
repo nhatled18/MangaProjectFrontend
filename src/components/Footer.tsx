@@ -1,34 +1,9 @@
 import { Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
 export function Footer() {
   return (
     <footer className="footer-ft">
       <div className="footer-container">
-        {/* About */}
-        <div className="footer-section">
-          <h3>Về chúng tôi</h3>
-          <p>
-            FAIRYTAILVIETNAM là nền tảng đọc manga Fairy Tail trực tuyến hàng đầu với chất lượng cao và cập nhật nhanh nhất.
-          </p>
-        </div>
-
-        {/* Links */}
-        <div className="footer-section">
-          <h3>Liên kết</h3>
-          <ul className="footer-links">
-            <li>
-              <Link to="/">Trang chủ</Link>
-            </li>
-            <li>
-              <Link to="/anime-list">Danh sách Truyện</Link>
-            </li>
-            <li>
-              <a href="#" onClick={(e) => e.preventDefault()}>Điều khoản</a>
-            </li>
-          </ul>
-        </div>
-
         {/* Social */}
         <div className="footer-section">
           <h3>Theo dõi</h3>

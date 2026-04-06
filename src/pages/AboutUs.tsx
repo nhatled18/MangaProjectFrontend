@@ -266,9 +266,6 @@ export const AboutUs: React.FC = () => {
               {/* Image — right */}
               <div className="w-full sm:w-[45%] group relative overflow-hidden rounded-2xl shadow-xl">
                 <img src="/About us/8.jpg" alt="Tứ Quý III 2026" className="w-full object-contain group-hover:scale-[1.03] transition-transform duration-700 ease-in-out" loading="lazy" />
-                <div className="absolute top-3 left-3">
-                  <span className="bg-yellow-400 text-gray-900 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-md">⚡ Sắp tới</span>
-                </div>
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-yellow-400" />
               </div>
 
@@ -279,7 +276,6 @@ export const AboutUs: React.FC = () => {
 
               {/* Text — left */}
               <div className="w-full sm:w-[45%] sm:pr-8 text-left sm:text-right">
-                <span className="inline-block bg-yellow-400 text-gray-900 text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full mb-3">2026 · Sắp tới</span>
                 <h3 className="text-2xl font-black text-gray-900 leading-snug mb-2">Tứ Quý III (2026)</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">
                   Tứ Quý luôn được các tiểu tiên tử quan tâm đặc biệt. 2026 đánh dấu sự trở lại với bộ sưu tập mới ra mắt vào mùa hè 2026 đầy sôi động. Hợp tác trở lại với họa sĩ Như Thư — người đứng sau 2 mùa trước — hứa hẹn tạo nên "cơn sốt" mới tại fanstore Fairy Tail Việt Nam.
