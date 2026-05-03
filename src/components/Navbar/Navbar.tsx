@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthModal } from './AuthModal';
 import { UserMenu } from './UserMenu';
+import { NotificationDropdown } from './NotificationDropdown';
 
 export const Navbar = () => {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ export const Navbar = () => {
         </div>
 
         <div className="nav-right">
-          <span style={{ cursor: 'pointer', fontSize: '1.2rem' }}>🔔</span>
+          <NotificationDropdown />
           
           {isAuthenticated ? (
             <UserMenu 

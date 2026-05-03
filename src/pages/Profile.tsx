@@ -2,6 +2,7 @@ import { useAuth } from '../hooks/useAuth';
 import { Mail, Calendar, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import TransactionHistory from '@/components/TransactionHistory';
 
 export function Profile() {
   const { user, isAuthenticated } = useAuth();
@@ -79,6 +80,11 @@ export function Profile() {
               <p className="text-white font-semibold">{joinDate}</p>
             </div>
           </div>
+        </div>
+
+        {/* Transaction History Section */}
+        <div className="mt-8">
+          <TransactionHistory />
         </div>
       </div>
     </div>

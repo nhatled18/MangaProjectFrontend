@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { User } from '../../types/auth';
-import { UserCheck, UserX, Coins, Users } from 'lucide-react';
+import { UserCheck, UserX, Coins, Users, Plus, History } from 'lucide-react';
+import { UserTransactionModal } from './UserTransactionModal';
 import { adminService } from '../../services/adminService';
 import { Pagination } from '../Pagination';
 
@@ -14,6 +15,8 @@ export function UserManagement({ token }: UserManagementProps) {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedUserForHistory, setSelectedUserForHistory] = useState<{ id: number; username: string } | null>(null);
 
   useEffect(() => {
     if (token) fetchUsers(currentPage);
@@ -78,17 +81,32 @@ export function UserManagement({ token }: UserManagementProps) {
         </div>
       )}
 
-      {/* Summary Info */}
-      <div className="p-3 md:p-4 bg-gray-800/30 border-b border-gray-800 flex flex-wrap items-center gap-3 md:gap-6">
-        <div className="flex items-center gap-2">
-          <Users size={16} className="text-blue-400" />
-          <span className="text-gray-300 text-xs md:text-sm">Tổng cộng: <span className="text-white font-bold">{users.length}</span> users (trang này)</span>
+      {/* Summary & Search Info */}
+      <div className="p-3 md:p-4 bg-gray-800/30 border-b border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-3 md:gap-6">
+          <div className="flex items-center gap-2">
+            <Users size={16} className="text-blue-400" />
+            <span className="text-gray-300 text-xs md:text-sm">Tổng cộng: <span className="text-white font-bold">{users.length}</span> users</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Coins size={16} className="text-yellow-500" />
+            <span className="text-gray-300 text-xs md:text-sm">Tổng token: <span className="text-yellow-500 font-bold">
+              {users.reduce((acc, u) => acc + (u.token_balance || 0), 0).toLocaleString()}
+            </span></span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Coins size={16} className="text-yellow-500" />
-          <span className="text-gray-300 text-xs md:text-sm">Tổng token: <span className="text-yellow-500 font-bold">
-            {users.reduce((acc, u) => acc + (u.token_balance || 0), 0).toLocaleString()}
-          </span> (trang này)</span>
+
+        <div className="relative w-full md:w-64">
+          <input 
+            type="text" 
+            placeholder="Tìm kiếm người dùng..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-gray-800 text-white px-3 py-1.5 pl-9 rounded border border-gray-700 focus:border-yellow-500 focus:outline-none text-sm"
+          />
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </div>
         </div>
       </div>
 
@@ -105,7 +123,9 @@ export function UserManagement({ token }: UserManagementProps) {
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
+            {users
+              .filter(u => u.username.toLowerCase().includes(searchTerm.toLowerCase()) || u.email.toLowerCase().includes(searchTerm.toLowerCase()))
+              .map((user) => (
               <tr key={user.id} className="border-b border-gray-800 hover:bg-gray-800/30">
                 <td className="px-4 md:px-6 py-3 md:py-4">
                   <span className="text-white font-semibold text-sm">{user.username}</span>
@@ -146,6 +166,34 @@ export function UserManagement({ token }: UserManagementProps) {
                   >
                     {user.is_active ? <UserX size={16} /> : <UserCheck size={16} />}
                   </button>
+                  <button
+                    onClick={() => {
+                      const amount = window.prompt(`Nhập số token muốn cộng cho ${user.username}:`, '100');
+                      if (amount && !isNaN(parseInt(amount))) {
+                        adminService.adminAddTokens(token!, user.id, parseInt(amount))
+                          .then(res => {
+                            if (res.status === 'success') {
+                              alert('Thành công!');
+                              fetchUsers(currentPage);
+                            } else {
+                              alert(res.message);
+                            }
+                          })
+                          .catch(err => alert(err.message));
+                      }
+                    }}
+                    className="p-1.5 rounded bg-yellow-900/30 hover:bg-yellow-900 text-yellow-400 transition-colors"
+                    title="Cộng token tay"
+                  >
+                    <Plus size={16} />
+                  </button>
+                  <button
+                    onClick={() => setSelectedUserForHistory({ id: user.id, username: user.username })}
+                    className="p-1.5 rounded bg-blue-900/30 hover:bg-blue-900 text-blue-400 transition-colors"
+                    title="Xem lịch sử"
+                  >
+                    <History size={16} />
+                  </button>
                 </td>
               </tr>
             ))}
@@ -162,6 +210,16 @@ export function UserManagement({ token }: UserManagementProps) {
             onPageChange={(page) => setCurrentPage(page)}
           />
         </div>
+      )}
+      {/* User History Modal */}
+      {selectedUserForHistory && token && (
+        <UserTransactionModal 
+          isOpen={!!selectedUserForHistory}
+          onClose={() => setSelectedUserForHistory(null)}
+          token={token}
+          userId={selectedUserForHistory.id}
+          username={selectedUserForHistory.username}
+        />
       )}
     </div>
   );
