@@ -25,8 +25,8 @@ const getHeaders = (token: string, isFormData = false) => {
 
 export const adminService = {
   // --- User Management ---
-  getUsers: (token: string, page: number = 1, limit: number = 10) => {
-    return fetch(`${getApiUrl()}/auth/admin/users?page=${page}&limit=${limit}`, {
+  getUsers: (token: string, page: number = 1, limit: number = 10, search: string = '') => {
+    return fetch(`${getApiUrl()}/auth/admin/users?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`, {
       method: 'GET',
       headers: getHeaders(token)
     }).then(handleResponse);

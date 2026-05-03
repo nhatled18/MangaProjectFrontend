@@ -19,15 +19,27 @@ export function UserManagement({ token }: UserManagementProps) {
   const [selectedUserForHistory, setSelectedUserForHistory] = useState<{ id: number; username: string } | null>(null);
 
   useEffect(() => {
-    if (token) fetchUsers(currentPage);
+    if (token) fetchUsers(currentPage, searchTerm);
   }, [token, currentPage]);
 
-  const fetchUsers = async (page: number = 1) => {
+  // Debounce search
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (token) {
+        setCurrentPage(1); // Reset to page 1 on search
+        fetchUsers(1, searchTerm);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
+
+  const fetchUsers = async (page: number = 1, search: string = '') => {
     if (!token) return;
     try {
       setLoading(true);
       setError(null);
-      const data = await adminService.getUsers(token, page);
+      const data = await adminService.getUsers(token, page, 10, search);
       if (data.success) {
         setUsers(data.data.users);
         setTotalPages(data.data.pages);
@@ -123,9 +135,7 @@ export function UserManagement({ token }: UserManagementProps) {
             </tr>
           </thead>
           <tbody>
-            {users
-              .filter(u => u.username.toLowerCase().includes(searchTerm.toLowerCase()) || u.email.toLowerCase().includes(searchTerm.toLowerCase()))
-              .map((user) => (
+            {users.map((user) => (
               <tr key={user.id} className="border-b border-gray-800 hover:bg-gray-800/30">
                 <td className="px-4 md:px-6 py-3 md:py-4">
                   <span className="text-white font-semibold text-sm">{user.username}</span>
