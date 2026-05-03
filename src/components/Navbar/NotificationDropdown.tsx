@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Bell, ExternalLink, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '@/services/api';
