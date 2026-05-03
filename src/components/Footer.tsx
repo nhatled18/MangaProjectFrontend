@@ -8,13 +8,13 @@ export function Footer() {
         <div className="footer-section">
           <h3>Theo dõi</h3>
           <div className="footer-social">
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook">
+            <a href="https://www.facebook.com/FairyTail2507/" target="_blank" rel="noopener noreferrer" title="Facebook">
               <Facebook size={20} />
             </a>
             <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" title="Twitter">
               <Twitter size={20} />
             </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" title="Instagram">
+            <a href="https://www.instagram.com/fairytailvietnam2507?utm_medium=copy_link" target="_blank" rel="noopener noreferrer" title="Instagram">
               <Instagram size={20} />
             </a>
             <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" title="YouTube">

@@ -150,5 +150,20 @@ export const adminService = {
       headers: getHeaders(token, true),
       body: formData
     }).then(handleResponse);
+  },
+
+  adminAddTokens: (token: string, userId: number, amount: number, reason?: string) => {
+    return fetch(`${getApiUrl()}/shop/admin/add-tokens`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify({ userId, amount, reason })
+    }).then(handleResponse);
+  },
+
+  getUserTransactions: (token: string, userId: number, limit: number = 50) => {
+    return fetch(`${getApiUrl()}/shop/admin/user-transactions/${userId}?limit=${limit}`, {
+      method: 'GET',
+      headers: getHeaders(token)
+    }).then(handleResponse);
   }
 };
