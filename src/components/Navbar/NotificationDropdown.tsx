@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Bell, ExternalLink, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '@/services/api';
+import apiClient from '@/services/api';
 
 interface Notification {
   id: number;
@@ -21,8 +21,8 @@ export const NotificationDropdown = () => {
 
   const fetchNotifications = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/notifications`);
-      const data = await response.json();
+      const response = await apiClient.get('/notifications');
+      const data = response.data;
       if (data.success) {
         setNotifications(data.data);
         // For global notifications, we use local storage to track "read" status
